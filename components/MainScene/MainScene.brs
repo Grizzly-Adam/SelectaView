@@ -54,11 +54,11 @@ sub init()
     loadSavedPlaylists()
     setupPlaylistMenu()
     
-    ' Cargar el último estado guardado
+    ' Load the last saved state
     lastState = loadLastState()
     
     if m.playlists.Count() > 0 then
-        ' Usar la última playlist si existe, sino la primera
+        ' Use the last playlist if it exists; otherwise, use the first one.
         playlistIndex = 0
         if lastState.playlistIndex <> invalid and lastState.playlistIndex >= 0 and lastState.playlistIndex < m.playlists.Count() then
             playlistIndex = lastState.playlistIndex
@@ -67,7 +67,7 @@ sub init()
         m.currentPlaylist = playlistIndex
         m.playlistList.jumpToItem = playlistIndex
         
-        ' Guardar la URL del último canal para seleccionarlo después de cargar la lista
+        ' Keep the last channel URL so it can be selected again after loading.
         if lastState.channelUrl <> invalid and lastState.channelUrl <> "" then
             m.pendingChannelUrl = lastState.channelUrl
         end if
@@ -99,32 +99,32 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.channelList.SetFocus(true)
                 m.top.backgroundURI = "pkg:/images/background-controls.jpg"
                 
-                ' Reanudar vista previa si hay canal enfocado
+                ' Continue preview playback if a channel is focused
                 if m.lastFocusedChannel >= 0 then
                     playPreviewChannel(m.lastFocusedChannel)
                 end if
                 result = true
             else if(key = "left")
-                print ">>> OVERLAY: Flecha izquierda presionada"
+                print ">>> OVERLAY: Left arrow key pressed"
                 print ">>> OVERLAY: overlayVisible = "; m.overlayVisible
                 print ">>> OVERLAY: allChannels = "; m.allChannels
                 
                 if m.overlayVisible then
-                    print ">>> OVERLAY: Ocultando overlay"
+                    print ">>> OVERLAY: Hiding overlay"
                     m.channelOverlay.visible = false
                     m.overlayVisible = false
                     m.top.setFocus(true)
                 else
-                    print ">>> OVERLAY: Mostrando overlay"
+                    print ">>> OVERLAY: Showing overlay"
                     if m.allChannels <> invalid then
                         m.channelOverlay.visible = true
                         m.overlayVisible = true
                         m.channelOverlayList.content = m.allChannels
                         m.channelOverlayList.jumpToItem = m.currentChannelIndex
                         m.channelOverlayList.SetFocus(true)
-                        print ">>> OVERLAY: Overlay visible, canales cargados"
+                        print ">>> OVERLAY: Overlay visible, channels loaded"
                     else
-                        print ">>> OVERLAY ERROR: No hay canales disponibles (m.allChannels es invalid)"
+                        print ">>> OVERLAY ERROR: No channels available (m.allChannels are invalid)"
                     end if
                 end if
                 result = true
@@ -136,29 +136,29 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             else if(key = "up" or key = "rewind")
                 print ">>> KEY UP/RW presionado, overlayVisible = "; m.overlayVisible
                 if not m.overlayVisible then
-                    print ">>> KEY UP: Llamando changeChannel(-1)"
+                    print ">>> KEY UP: Executing changeChannel(-1)"
                     changeChannel(-1)
                     result = true
                 else
-                    print ">>> KEY UP: Overlay visible, tecla pasará al overlay"
+                    print ">>> KEY UP: Overlay visible, input passed to overlay"
                 end if
             else if(key = "down" or key = "fastforward")
                 print ">>> KEY DOWN/FF presionado, overlayVisible = "; m.overlayVisible
                 if not m.overlayVisible then
-                    print ">>> KEY DOWN: Llamando changeChannel(1)"
+                    print ">>> KEY DOWN: Executing changeChannel(1)"
                     changeChannel(1)
                     result = true
                 else
-                    print ">>> KEY DOWN: Overlay visible, tecla pasará al overlay"
+                    print ">>> KEY DOWN: Overlay visible, input passed to overlay"
                 end if
             else if(key = "OK")
-                ' Mostrar menú de opciones solo si el video ya está reproduciéndose
+                ' Display the options menu only when the video is already playing
                 if m.video.state = "playing" or m.video.state = "paused" or m.video.state = "buffering" then
                     showVideoOptionsMenu()
                     result = true
                 end if
             else if(key = "play")
-                ' Play/Pause del video
+                ' Play/Pause the video
                 if m.video.state = "playing" then
                     m.video.control = "pause"
                 else
@@ -166,7 +166,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 end if
                 result = true
             else if(key = "replay")
-                ' Recargar el canal actual (Instant Replay)
+                ' Reload the current channel (Instant Replay)
                 reloadCurrentChannel()
                 result = true
             end if
@@ -203,38 +203,32 @@ sub loadSavedPlaylists()
     m.playlists = []
     
     m.playlists.Push({
-        name: "Colombia",
-        url: "https://www.m3u.cl/lista/CO.m3u",
+        name: "Grizz",
+        url: "https://grizz.atwebpages.com/grizz.m3u",
         isDefault: true
     })
-    
+
     m.playlists.Push({
-        name: "Chile",
-        url: "https://www.m3u.cl/lista/CL.m3u",
+        name: "United States",
+        url: "https://iptv-org.github.io/iptv/countries/us.m3u",
         isDefault: true
     })
-    
+
     m.playlists.Push({
-        name: "Argentina",
-        url: "https://www.m3u.cl/lista/AR.m3u",
+        name: "Canada",
+        url: "https://iptv-org.github.io/iptv/countries/ca.m3u",
         isDefault: true
     })
-    
+
     m.playlists.Push({
-        name: "México",
-        url: "https://www.m3u.cl/lista/MX.m3u",
+        name: "United Kingdom",
+        url: "https://iptv-org.github.io/iptv/countries/uk.m3u",
         isDefault: true
     })
-    
+
     m.playlists.Push({
-        name: "Ecuador",
-        url: "https://www.m3u.cl/lista/EC.m3u",
-        isDefault: true
-    })
-    
-    m.playlists.Push({
-        name: "Estados Unidos",
-        url: "https://www.m3u.cl/lista/US.m3u",
+        name: "Australia",
+        url: "https://iptv-org.github.io/iptv/countries/au.m3u",
         isDefault: true
     })
     
@@ -284,9 +278,14 @@ sub setupPlaylistMenu()
         "Colombia": "🇨🇴",
         "Chile": "🇨🇱",
         "Argentina": "🇦🇷",
-        "México": "🇲🇽",
+        "Mexico": "🇲🇽",
         "Ecuador": "🇪🇨",
-        "Estados Unidos": "🇺🇸"
+        "United States": "🇺🇸",
+        "Canada": "🇨🇦",
+        "Australia": "🇦🇺",
+        "United Kingdom": "🇬🇧",
+        "Japan": "🇯🇵",
+        "Korea": "🇰🇷"
     }
     
     for each playlist in m.playlists
@@ -304,7 +303,7 @@ sub setupPlaylistMenu()
     end for
     
     item = content.CreateChild("ContentNode")
-    item.title = "➕ Agregar Lista"
+    item.title = "➕ Add new playlist"
     
     m.playlistList.content = content
     m.playlistList.SetFocus(true)
@@ -317,10 +316,10 @@ sub onPlaylistSelected()
         showPlaylistManager()
     else if selectedIdx >= 0 and selectedIdx < m.playlists.Count() then
         m.currentPlaylist = selectedIdx
-        m.pendingChannelUrl = invalid ' Limpiar canal pendiente al cambiar de playlist
+        m.pendingChannelUrl = invalid ' Clear queued channel when changing playlist
         loadPlaylist(m.playlists[selectedIdx].url)
         
-        ' Guardar la playlist seleccionada
+        ' Save the selected playlist
         saveLastState()
     end if
 end sub
@@ -337,7 +336,7 @@ sub showPlaylistOptions()
     if selectedPlaylist.isDefault = true then
         dialog = CreateObject("roSGNode", "Dialog")
         dialog.title = selectedPlaylist.name
-        dialog.message = "Las listas predefinidas no se pueden editar o eliminar."
+        dialog.message = "Built-in playlists cannot be edited or removed."
         dialog.buttons = ["OK"]
         m.top.dialog = dialog
         m.top.dialog.observeField("buttonSelected", "onDefaultPlaylistDialogClosed")
@@ -346,7 +345,7 @@ sub showPlaylistOptions()
     
     dialog = CreateObject("roSGNode", "Dialog")
     dialog.title = "Opciones: " + selectedPlaylist.name
-    dialog.buttons = ["Editar Nombre", "Editar URL", "Eliminar", "Cancelar"]
+    dialog.buttons = ["Edit Name", "Edit URL", "Delete", "Cancel"]
     m.top.dialog = dialog
     m.selectedPlaylistIndex = selectedIdx
     
@@ -366,7 +365,7 @@ sub onPlaylistOptionSelected()
     m.top.dialog.close = true
     
     if buttonIdx = 0 then
-        ' Usar timer para esperar que el diálogo se cierre
+        ' Use a timer to wait for the dialog to close.
         m.optionTimer = CreateObject("roSGNode", "Timer")
         m.optionTimer.duration = 0.2
         m.optionTimer.repeat = false
@@ -390,9 +389,9 @@ sub onPlaylistOptionSelected()
 end sub
 
 sub editPlaylistName()
-    print ">>> EDIT NAME: Iniciando"
+    print ">>> EDIT NAME: Initializing"
     
-    ' Limpiar timer si existe
+    ' Clear timer if it exists
     if m.optionTimer <> invalid then
         m.optionTimer.unobserveField("fire")
         m.optionTimer = invalid
@@ -404,10 +403,10 @@ sub editPlaylistName()
     
     keyboard = createObject("roSGNode", "StandardKeyboardDialog")
     keyboard.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
-    keyboard.title = "EDITAR NOMBRE"
-    keyboard.message = "Nuevo nombre para la lista"
+    keyboard.title = "EDIT NAME"
+    keyboard.message = "Enter new name for playlist"
     keyboard.text = playlist.name
-    keyboard.buttons = ["Guardar", "Cancelar"]
+    keyboard.buttons = ["Save", "Cancel"]
     
     m.top.dialog = keyboard
     m.top.dialog.observeField("buttonSelected", "onEditNameComplete")
@@ -421,7 +420,7 @@ sub onEditNameComplete()
     if buttonSelected = 0 then
         newName = m.top.dialog.text
         
-        ' Desregistrar y cerrar el diálogo
+        ' Unregister and close the dialog
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         
@@ -447,9 +446,9 @@ sub onEditNameComplete()
 end sub
 
 sub editPlaylistUrl()
-    print ">>> EDIT URL: Iniciando"
+    print ">>> EDIT URL: Initializing"
     
-    ' Limpiar timer si existe
+    ' Clear time if exists
     if m.optionTimer <> invalid then
         m.optionTimer.unobserveField("fire")
         m.optionTimer = invalid
@@ -461,10 +460,10 @@ sub editPlaylistUrl()
     
     keyboard = createObject("roSGNode", "StandardKeyboardDialog")
     keyboard.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
-    keyboard.title = "EDITAR URL"
-    keyboard.message = "Nueva URL de la lista M3U"
+    keyboard.title = "EDIT URL"
+    keyboard.message = "New URL for the M3U playlist"
     keyboard.text = playlist.url
-    keyboard.buttons = ["Guardar", "Cancelar"]
+    keyboard.buttons = ["Save", "Cancel"]
     
     m.top.dialog = keyboard
     m.top.dialog.observeField("buttonSelected", "onEditUrlComplete")
@@ -478,7 +477,7 @@ sub onEditUrlComplete()
     if buttonSelected = 0 then
         newUrl = m.top.dialog.text
         
-        ' Desregistrar y cerrar el diálogo primero
+        ' Unregister and close the dialog first
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         
@@ -495,8 +494,8 @@ sub onEditUrlComplete()
             
             loadPlaylist(newUrl)
         else
-            ' Mostrar error
-            m.pendingErrorMessage = "URL inválida. Debe empezar con http:// o https://"
+            ' Show error
+            m.pendingErrorMessage = "URL invalid. Must start with http:// or https://"
             m.editUrlErrorTimer = CreateObject("roSGNode", "Timer")
             m.editUrlErrorTimer.duration = 0.3
             m.editUrlErrorTimer.repeat = false
@@ -511,7 +510,7 @@ sub onEditUrlComplete()
 end sub
 
 sub showEditUrlError()
-    print ">>> EDIT URL ERROR: Mostrando diálogo de error"
+    print ">>> EDIT URL ERROR: Showing error dialog"
     
     if m.editUrlErrorTimer <> invalid then
         m.editUrlErrorTimer.unobserveField("fire")
@@ -520,7 +519,7 @@ sub showEditUrlError()
     
     errorDialog = CreateObject("roSGNode", "Dialog")
     errorDialog.title = "Error"
-    errorDialog.message = "URL inválida. Debe empezar con http:// o https://"
+    errorDialog.message = "URL invalid Must start with http:// or https://"
     errorDialog.buttons = ["OK"]
     
     m.top.dialog = errorDialog
@@ -534,9 +533,9 @@ sub onEditUrlErrorClosed()
 end sub
 
 sub confirmDeletePlaylist()
-    print ">>> DELETE: Mostrando confirmación"
+    print ">>> DELETE: Showing confirmation"
     
-    ' Limpiar timer si existe
+    ' Clear timer if it exists
     if m.optionTimer <> invalid then
         m.optionTimer.unobserveField("fire")
         m.optionTimer = invalid
@@ -547,9 +546,9 @@ sub confirmDeletePlaylist()
     playlist = m.playlists[m.selectedPlaylistIndex]
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "Confirmar eliminación"
-    dialog.message = "¿Eliminar '" + playlist.name + "'?"
-    dialog.buttons = ["Eliminar", "Cancelar"]
+    dialog.title = "Are you sure?"
+    dialog.message = "Delete '" + playlist.name + "'?"
+    dialog.buttons = ["Delete", "Cancel"]
     
     m.top.dialog = dialog
     m.top.dialog.observeField("buttonSelected", "onDeleteConfirmed")
@@ -594,15 +593,15 @@ sub onDeleteConfirmed()
 end sub
 
 sub showPlaylistManager()
-    print ">>> PLAYLIST MANAGER: Iniciando paso 1 - Nombre <<<"
+    print ">>> PLAYLIST MANAGER: Starting step one: NAME <<<"
     
-    ' Limpiar cualquier diálogo anterior
+    ' Clear previous dialogs
     if m.top.dialog <> invalid then
         m.top.dialog.close = true
         m.top.dialog = invalid
     end if
     
-    ' Limpiar timers anteriores
+    ' Clear previous timers
     if m.urlDialogTimer <> invalid then
         m.urlDialogTimer.control = "stop"
         m.urlDialogTimer = invalid
@@ -612,15 +611,15 @@ sub showPlaylistManager()
     
     keyboardDialog = createObject("roSGNode", "StandardKeyboardDialog")
     keyboardDialog.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
-    keyboardDialog.title = "NUEVA LISTA - PASO 1/2"
-    keyboardDialog.message = "Nombre de la lista (ej: Mi Canal)"
-    keyboardDialog.buttons = ["Siguiente", "Cancelar"]
+    keyboardDialog.title = "NEW PLAYLIST - STEP 1/2"
+    keyboardDialog.message = "Enter name (ex: My list)"
+    keyboardDialog.buttons = ["Next", "Cancel"]
     keyboardDialog.text = ""
     
     m.top.dialog = keyboardDialog
     m.top.dialog.observeField("buttonSelected", "onPlaylistNameEntered")
     
-    print ">>> PLAYLIST MANAGER: Diálogo de nombre mostrado"
+    print ">>> PLAYLIST MANAGER: Showing NAME dialog"
 end sub
 
 sub onPlaylistNameEntered()
@@ -629,64 +628,64 @@ sub onPlaylistNameEntered()
     buttonSelected = m.top.dialog.buttonSelected
     
     if buttonSelected = 0 then
-        ' Botón "Siguiente" presionado
+        ' "Next" button pressed
         name = m.top.dialog.text
         if name = "" or name = invalid then
-            name = "Mi Lista"
+            name = "New Playlist"
         end if
         
         m.tempPlaylistName = name
-        print ">>> PLAYLIST NAME: Nombre guardado = "; m.tempPlaylistName
+        print ">>> PLAYLIST NAME: Name saved = "; m.tempPlaylistName
         
-        ' Cerrar diálogo actual
+        ' Close current dialog
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         
-        ' Esperar un momento antes de mostrar el siguiente diálogo
+        ' Wait a moment before showing the next dialog
         m.urlDialogTimer = CreateObject("roSGNode", "Timer")
         m.urlDialogTimer.duration = 0.3
         m.urlDialogTimer.repeat = false
         m.urlDialogTimer.observeField("fire", "showUrlDialog")
         m.urlDialogTimer.control = "start"
     else
-        ' Botón "Cancelar" presionado
-        print ">>> PLAYLIST NAME: Cancelado"
+        ' "Cancel" button pressed
+        print ">>> PLAYLIST NAME: Cancel"
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         m.tempPlaylistName = invalid
         
-        ' Devolver el foco a la lista
+        ' Restore focus to the list
         m.playlistList.setFocus(true)
     end if
 end sub
 
 sub showUrlDialog()
-    print ">>> URL DIALOG: Iniciando paso 2 - URL <<<"
+    print ">>> URL DIALOG: Starting part 2 - URL <<<"
     
-    ' Limpiar timer
+    ' Clear timer
     if m.urlDialogTimer <> invalid then
         m.urlDialogTimer.unobserveField("fire")
         m.urlDialogTimer = invalid
     end if
     
-    ' Verificar que tenemos el nombre
+    ' Check if name already exists
     if m.tempPlaylistName = invalid then
-        print ">>> URL DIALOG ERROR: No hay nombre guardado"
+        print ">>> URL DIALOG ERROR: No name saved"
         m.playlistList.setFocus(true)
         return
     end if
     
     urlDialog = createObject("roSGNode", "StandardKeyboardDialog")
     urlDialog.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
-    urlDialog.title = "NUEVA LISTA - PASO 2/2"
-    urlDialog.message = "URL de la lista M3U (ej: https://ejemplo.com/lista.m3u)"
-    urlDialog.buttons = ["Agregar", "Cancelar"]
+    urlDialog.title = "NEW PLAYLIST - PART 2/2"
+    urlDialog.message = "URL of the M3U playlist (ex: https://example.com/list.m3u)"
+    urlDialog.buttons = ["Add", "Cancel"]
     urlDialog.text = ""
     
     m.top.dialog = urlDialog
     m.top.dialog.observeField("buttonSelected", "onPlaylistUrlEntered")
     
-    print ">>> URL DIALOG: Diálogo de URL mostrado"
+    print ">>> URL DIALOG: URL dialog displayed"
 end sub
 
 sub onPlaylistUrlEntered()
@@ -695,11 +694,11 @@ sub onPlaylistUrlEntered()
     buttonSelected = m.top.dialog.buttonSelected
     
     if buttonSelected = 0 then
-        ' Botón "Agregar" presionado
+        ' "Add" button pressed
         url = m.top.dialog.text
-        print ">>> PLAYLIST URL: URL ingresada = "; url
+        print ">>> PLAYLIST URL: URL entered = "; url
         
-        ' Desregistrar observer y cerrar diálogo
+        ' Remove observer and close dialog
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         
@@ -711,14 +710,14 @@ sub onPlaylistUrlEntered()
         end if
         
         if not isValidUrl(url) then
-            print ">>> PLAYLIST URL ERROR: URL inválida"
-            showUrlErrorMessage("URL inválida. Debe empezar con http:// o https://")
+            print ">>> PLAYLIST URL ERROR: URL empty"
+            showUrlErrorMessage("URL invalid. Must start with http:// or https://")
             return
         end if
         
-        ' Guardar y cargar la playlist
+        ' Save and load the playlist
         if m.tempPlaylistName <> invalid then
-            print ">>> PLAYLIST URL: Guardando playlist - Nombre: "; m.tempPlaylistName; ", URL: "; url
+            print ">>> PLAYLIST URL: Saving playlist - Name: "; m.tempPlaylistName; ", URL: "; url
             savePlaylist(m.tempPlaylistName, url)
             loadPlaylist(url)
         end if
@@ -726,8 +725,8 @@ sub onPlaylistUrlEntered()
         m.tempPlaylistName = invalid
         m.playlistList.setFocus(true)
     else
-        ' Botón "Cancelar" presionado
-        print ">>> PLAYLIST URL: Cancelado"
+        ' Cancel button pressed
+        print ">>> PLAYLIST URL: Canceled"
         m.top.dialog.unobserveField("buttonSelected")
         m.top.dialog.close = true
         m.tempPlaylistName = invalid
@@ -736,9 +735,9 @@ sub onPlaylistUrlEntered()
 end sub
 
 sub showUrlErrorMessage(message as String)
-    print ">>> URL ERROR: Mostrando mensaje de error"
+    print ">>> URL ERROR: Displaying error message"
     
-    ' Usar timer para mostrar el error
+    ' Use a timer to show the error
     m.pendingErrorMessage = message
     m.errorTimer = CreateObject("roSGNode", "Timer")
     m.errorTimer.duration = 0.3
@@ -748,14 +747,14 @@ sub showUrlErrorMessage(message as String)
 end sub
 
 sub showUrlError()
-    print ">>> URL ERROR: Timer disparado, mostrando diálogo"
+    print ">>> URL ERROR: Timer triggered, showing dialog"
     
     if m.errorTimer <> invalid then
         m.errorTimer.unobserveField("fire")
         m.errorTimer = invalid
     end if
     
-    message = "URL inválida. Debe empezar con http:// o https://"
+    message = "URL invalid. Must start with http:// or https://"
     if m.pendingErrorMessage <> invalid then
         message = m.pendingErrorMessage
         m.pendingErrorMessage = invalid
@@ -771,7 +770,7 @@ sub showUrlError()
 end sub
 
 sub onErrorDialogClosed()
-    print ">>> ERROR DIALOG: Cerrado"
+    print ">>> ERROR DIALOG: Closed"
     m.top.dialog.unobserveField("buttonSelected")
     m.top.dialog.close = true
     m.playlistList.setFocus(true)
@@ -780,7 +779,7 @@ end sub
 sub checkState()
     state = m.video.state
     if(state = "error")
-        ' Mostrar error en el overlay de información en lugar de un diálogo bloqueante
+        ' Show error in overlay rather than a blocking dialog
         showChannelError(m.video.errorMsg)
     end if
 end sub
@@ -792,16 +791,16 @@ sub showChannelError(errorMsg as String)
     totalChannels = m.flatChannelList.Count().ToStr()
     
     channel = m.flatChannelList[m.currentChannelIndex]
-    channelName = "Canal"
+    channelName = "Channel"
     if channel <> invalid and channel.title <> invalid then
         channelName = channel.title
     end if
     
-    m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channelName + chr(10) + "⚠️ Error: Canal no disponible"
+    m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channelName + chr(10) + "⚠️ Error: Channel unavailable"
     
     m.channelInfoOverlay.visible = true
     
-    ' Crear timer para ocultar el overlay después de 4 segundos
+    ' Set a timer to hide the overlay after 4 seconds
     if m.channelInfoTimer <> invalid then
         m.channelInfoTimer.control = "stop"
     end if
@@ -824,18 +823,18 @@ sub SetContent()
         
         if m.flatChannelList.Count() > 0 and m.currentChannelIndex = 0 then
             m.currentChannelIndex = 0
-            print ">>> SETCONTENT: Inicializado currentChannelIndex = 0"
+            print ">>> SETCONTENT: Initializing currentChannelIndex = 0"
         end if
         
         m.channelList.content = m.allChannels
         m.channelList.SetFocus(true)
         
-        ' Restaurar el último canal si hay uno pendiente
+        ' Resume last channel if one is pending
         restorePendingChannel()
     else
         errorDialog = CreateObject("roSGNode", "Dialog")
         errorDialog.title = "Error"
-        errorDialog.message = "No se pudo cargar la lista. Verifica la URL."
+        errorDialog.message = "Could not load the list. Check URL."
         m.top.dialog = errorDialog
     end if
 end sub
@@ -861,16 +860,16 @@ sub buildFlatChannelList()
         end if
     end for
     
-    print "Total canales en lista plana: "; m.flatChannelList.Count()
+    print "Total channels in flat list: "; m.flatChannelList.Count()
 end sub
 
 sub changeChannel(direction as Integer)
-    print ">>> CHANGECHANNEL: Llamado con direction = "; direction
+    print ">>> CHANGECHANNEL: Function called with direction parameter = "; direction
     print ">>> CHANGECHANNEL: flatChannelList.Count() = "; m.flatChannelList.Count()
     print ">>> CHANGECHANNEL: currentChannelIndex = "; m.currentChannelIndex
     
     if m.flatChannelList.Count() = 0 then 
-        print ">>> CHANGECHANNEL ERROR: flatChannelList está vacío!"
+        print ">>> CHANGECHANNEL ERROR: flatChannelList is empty!"
         return
     end if
     
@@ -882,15 +881,15 @@ sub changeChannel(direction as Integer)
         m.currentChannelIndex = 0
     end if
     
-    print ">>> CHANGECHANNEL: Nuevo índice = "; m.currentChannelIndex
+    print ">>> CHANGECHANNEL: New index = "; m.currentChannelIndex
     
     channel = m.flatChannelList[m.currentChannelIndex]
     if channel <> invalid then
-        print ">>> CHANGECHANNEL: Reproduciendo canal: "; channel.title
+        print ">>> CHANGECHANNEL: Playing channel: "; channel.title
         showChannelInfo(channel)
         playChannel(channel)
     else
-        print ">>> CHANGECHANNEL ERROR: Canal es invalid en índice "; m.currentChannelIndex
+        print ">>> CHANGECHANNEL ERROR: No valid channel at index "; m.currentChannelIndex
     end if
 end sub
 
@@ -903,7 +902,7 @@ sub showChannelInfo(channel as Object)
     
     m.channelInfoOverlay.visible = true
     
-    ' Crear timer para ocultar el overlay después de 3 segundos
+    ' Create a timer to hide the overlay after 3 seconds
     if m.channelInfoTimer <> invalid then
         m.channelInfoTimer.control = "stop"
     end if
@@ -921,14 +920,14 @@ sub hideChannelInfo()
     end if
 end sub
 
-' ==================== MENÚ DE OPCIONES DE VIDEO ====================
+' ==================== Video settings menu ====================
 
 sub showVideoOptionsMenu()
-    print ">>> VIDEO OPTIONS: Mostrando menú de opciones"
+    print ">>> VIDEO OPTIONS: Showing options menu"
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "⚙️ Opciones de Reproducción"
-    dialog.buttons = ["🔊 Cambiar Audio", "💬 Subtítulos", "ℹ️ Info del Canal", "❌ Cerrar"]
+    dialog.title = "⚙️ Playback options"
+    dialog.buttons = ["🔊 Audio Settings", "💬 Subtitles", "ℹ️ Channel Details", "❌ Close"]
     
     m.top.dialog = dialog
     m.top.dialog.observeField("buttonSelected", "onVideoOptionSelected")
@@ -941,13 +940,13 @@ sub onVideoOptionSelected()
     m.top.dialog.close = true
     
     if buttonIdx = 0 then
-        ' Cambiar pista de audio
+        ' Change audio track
         showAudioTracksMenu()
     else if buttonIdx = 1 then
-        ' Subtítulos
+        ' Subtitles
         showSubtitlesMenu()
     else if buttonIdx = 2 then
-        ' Info del canal
+        ' Channel info
         showCurrentChannelInfo()
     end if
     
@@ -955,12 +954,11 @@ sub onVideoOptionSelected()
 end sub
 
 sub showAudioTracksMenu()
-    print ">>> AUDIO TRACKS: Obteniendo pistas de audio"
+    print ">>> AUDIO TRACKS: Fetching audio tracks"
     
     if m.video = invalid then return
     
-    ' Obtener información de las pistas de audio disponibles
-    ' Intentar múltiples propiedades para compatibilidad
+    ' Get available audio track info and try multiple properties for compatibility
     audioTracks = m.video.audioTracks
     
     print ">>> AUDIO: audioTracks = "; audioTracks
@@ -971,18 +969,18 @@ sub showAudioTracksMenu()
         print ">>> AUDIO: availableAudioTracks = "; audioTracks
     end if
     
-    ' Debug: mostrar información del stream
+    ' Debug: Show stream information
     print ">>> AUDIO: streamInfo = "; m.video.streamInfo
     print ">>> AUDIO: audioFormat = "; m.video.audioFormat
     
     if audioTracks = invalid or audioTracks.Count() = 0 then
-        ' Mostrar información de debug
-        message = "No se detectaron pistas de audio adicionales." + chr(10) + chr(10)
-        message = message + "Formato de audio: " + toStr(m.video.audioFormat) + chr(10)
-        message = message + "Estado del video: " + m.video.state
+        ' how debug information
+        message = "No alternate audio tracks detected." + chr(10) + chr(10)
+        message = message + "Audio format: " + toStr(m.video.audioFormat) + chr(10)
+        message = message + "Video status: " + m.video.state
         
         dialog = CreateObject("roSGNode", "Dialog")
-        dialog.title = "🔊 Pistas de Audio"
+        dialog.title = "🔊 Audio tracks"
         dialog.message = message
         dialog.buttons = ["OK"]
         m.top.dialog = dialog
@@ -990,11 +988,11 @@ sub showAudioTracksMenu()
         return
     end if
     
-    ' Crear lista de pistas de audio
+    ' Create list of audio tracks
     m.audioTracksList = []
     buttons = []
     
-    ' Obtener pista actual
+    ' Get current audio track
     currentTrackIndex = -1
     if m.video.currentAudioTrack <> invalid then
         currentTrackIndex = m.video.currentAudioTrack
@@ -1006,7 +1004,7 @@ sub showAudioTracksMenu()
         
         print ">>> AUDIO TRACK "; i; ": "; track
         
-        ' Construir nombre de la pista - revisar diferentes propiedades
+        ' Generate track name using different properties
         language = ""
         if type(track) = "roAssociativeArray" then
             if track.Language <> invalid and track.Language <> "" then
@@ -1018,10 +1016,10 @@ sub showAudioTracksMenu()
             if language <> "" then
                 trackName = getLanguageName(language)
             else
-                trackName = "Pista " + (i + 1).ToStr()
+                trackName = "Track " + (i + 1).ToStr()
             end if
             
-            ' Añadir nombre si existe
+            ' Add name if available
             if track.Name <> invalid and track.Name <> "" then
                 trackName = trackName + " (" + track.Name + ")"
             else if track.name <> invalid and track.name <> "" then
@@ -1030,10 +1028,10 @@ sub showAudioTracksMenu()
         else if type(track) = "String" or type(track) = "roString" then
             trackName = getLanguageName(track)
         else
-            trackName = "Pista " + (i + 1).ToStr()
+            trackName = "List " + (i + 1).ToStr()
         end if
         
-        ' Marcar la pista actual
+        ' Highlight current track
         if i = currentTrackIndex then
             trackName = "✓ " + trackName
         end if
@@ -1042,10 +1040,10 @@ sub showAudioTracksMenu()
         m.audioTracksList.Push(i)
     end for
     
-    buttons.Push("❌ Cancelar")
+    buttons.Push("❌ Cancel")
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "🔊 Seleccionar Pista de Audio (" + audioTracks.Count().ToStr() + " disponibles)"
+    dialog.title = "🔊 Select audio track (" + audioTracks.Count().ToStr() + " disponibles)"
     dialog.buttons = buttons
     
     m.top.dialog = dialog
@@ -1068,31 +1066,31 @@ sub onAudioTrackSelected()
     
     if m.audioTracksList <> invalid and buttonIdx < m.audioTracksList.Count() then
         trackIndex = m.audioTracksList[buttonIdx]
-        print ">>> AUDIO: Cambiando a pista "; trackIndex
+        print ">>> AUDIO: Changing tracks "; trackIndex
         
-        ' Intentar cambiar la pista de audio usando diferentes métodos
-        ' Método 1: audioTrack (índice directo)
+        ' Try changing the audio track using different methods.
+        ' Method 1: audioTrack (direct index)
         m.video.audioTrack = trackIndex
         
-        ' Método 2: selectAudioTrack
+        ' Method 2: selectAudioTrack
         m.video.selectAudioTrack = trackIndex
         
-        ' Mostrar confirmación
-        showChannelInfoMessage("🔊 Audio: Pista " + (trackIndex + 1).ToStr() + " seleccionada")
+        ' Show confirmation message
+        showChannelInfoMessage("🔊 Audio: Track " + (trackIndex + 1).ToStr() + " selected")
     end if
     
     m.top.setFocus(true)
 end sub
 
 sub showSubtitlesMenu()
-    print ">>> SUBTITLES: Obteniendo subtítulos"
+    print ">>> SUBTITLES: Fetching subtitles"
     
     if m.video = invalid then return
     
-    ' Obtener información de las pistas de subtítulos disponibles
+    ' Get available subtitle track information
     subtitleTracks = m.video.availableCaptionTracks
     
-    buttons = ["❌ Desactivar Subtítulos"]
+    buttons = ["❌ Subtitles off"]
     m.subtitleTracksList = [-1] ' -1 = desactivar
     
     if subtitleTracks <> invalid and subtitleTracks.Count() > 0 then
@@ -1103,7 +1101,7 @@ sub showSubtitlesMenu()
             if track.Language <> invalid and track.Language <> "" then
                 trackName = getLanguageName(track.Language)
             else
-                trackName = "Subtítulo " + (i + 1).ToStr()
+                trackName = "Subtitle " + (i + 1).ToStr()
             end if
             
             if track.Description <> invalid and track.Description <> "" then
@@ -1115,13 +1113,13 @@ sub showSubtitlesMenu()
         end for
     end if
     
-    buttons.Push("❌ Cancelar")
+    buttons.Push("❌ Cancel")
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "💬 Subtítulos"
+    dialog.title = "💬 Subtitles"
     
     if subtitleTracks = invalid or subtitleTracks.Count() = 0 then
-        dialog.message = "No hay subtítulos disponibles para este canal."
+        dialog.message = "No subtitles available for this channel."
     end if
     
     dialog.buttons = buttons
@@ -1140,14 +1138,14 @@ sub onSubtitleTrackSelected()
         trackIndex = m.subtitleTracksList[buttonIdx]
         
         if trackIndex = -1 then
-            print ">>> SUBTITLES: Desactivando subtítulos"
+            print ">>> SUBTITLES: Disabling subtitles"
             m.video.suppressCaptions = true
-            showChannelInfoMessage("💬 Subtítulos desactivados")
+            showChannelInfoMessage("💬 Subtitles off")
         else
-            print ">>> SUBTITLES: Activando subtítulo "; trackIndex
+            print ">>> SUBTITLES: Turning subtitles on "; trackIndex
             m.video.suppressCaptions = false
             m.video.selectCaptionTrack = trackIndex
-            showChannelInfoMessage("💬 Subtítulos activados")
+            showChannelInfoMessage("💬 Subtitles on")
         end if
     end if
     
@@ -1161,28 +1159,28 @@ sub showCurrentChannelInfo()
     channel = m.flatChannelList[m.currentChannelIndex]
     if channel = invalid then return
     
-    message = "Canal: " + channel.title + chr(10)
-    message = message + "Posición: " + (m.currentChannelIndex + 1).ToStr() + " de " + m.flatChannelList.Count().ToStr() + chr(10)
+    message = "Channel: " + channel.title + chr(10)
+    message = message + "Position: " + (m.currentChannelIndex + 1).ToStr() + " de " + m.flatChannelList.Count().ToStr() + chr(10)
     
     if m.video <> invalid then
         state = m.video.state
-        message = message + "Estado: " + state + chr(10)
+        message = message + "State: " + state + chr(10)
         
-        ' Info de audio
+        ' Audio information
         audioTracks = m.video.availableAudioTracks
         if audioTracks <> invalid then
-            message = message + "Pistas de audio: " + audioTracks.Count().ToStr() + chr(10)
+            message = message + "Audio tracks: " + audioTracks.Count().ToStr() + chr(10)
         end if
         
-        ' Info de subtítulos
+        ' Subtitle information
         captionTracks = m.video.availableCaptionTracks
         if captionTracks <> invalid then
-            message = message + "Subtítulos: " + captionTracks.Count().ToStr()
+            message = message + "Subtitles: " + captionTracks.Count().ToStr()
         end if
     end if
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "ℹ️ Información del Canal"
+    dialog.title = "ℹ️ Channel information"
     dialog.message = message
     dialog.buttons = ["OK"]
     
@@ -1215,44 +1213,44 @@ end sub
 
 function getLanguageName(code as String) as String
     languages = {
-        "es": "Español",
-        "spa": "Español",
-        "spanish": "Español",
-        "en": "Inglés",
-        "eng": "Inglés",
-        "english": "Inglés",
-        "pt": "Portugués",
-        "por": "Portugués",
-        "portuguese": "Portugués",
-        "fr": "Francés",
-        "fra": "Francés",
-        "fre": "Francés",
-        "french": "Francés",
-        "de": "Alemán",
-        "deu": "Alemán",
-        "ger": "Alemán",
-        "german": "Alemán",
-        "it": "Italiano",
-        "ita": "Italiano",
-        "italian": "Italiano",
-        "ja": "Japonés",
-        "jpn": "Japonés",
-        "japanese": "Japonés",
-        "ko": "Coreano",
-        "kor": "Coreano",
-        "korean": "Coreano",
-        "zh": "Chino",
-        "chi": "Chino",
-        "zho": "Chino",
-        "chinese": "Chino",
-        "ru": "Ruso",
-        "rus": "Ruso",
-        "russian": "Ruso",
-        "ar": "Árabe",
-        "ara": "Árabe",
-        "arabic": "Árabe",
-        "und": "Desconocido",
-        "mul": "Múltiple"
+        "es": "Spanish",
+        "spa": "Spanish",
+        "spanish": "Spanish",
+        "en": "English",
+        "eng": "English",
+        "english": "English",
+        "pt": "Portugues",
+        "por": "Portugues",
+        "portuguese": "Portugues",
+        "fr": "French",
+        "fra": "French",
+        "fre": "French",
+        "french": "French",
+        "de": "German",
+        "deu": "German",
+        "ger": "German",
+        "german": "German",
+        "it": "Italian",
+        "ita": "Italian",
+        "italian": "Italian",
+        "ja": "Japanese",
+        "jpn": "Japanese",
+        "japanese": "Japanese",
+        "ko": "Korean",
+        "kor": "Korean",
+        "korean": "Korean",
+        "zh": "Chinese",
+        "chi": "Chinese",
+        "zho": "Chinese",
+        "chinese": "Chinese",
+        "ru": "Russian",
+        "rus": "Russian",
+        "russian": "Russian",
+        "ar": "Arab",
+        "ara": "Arab",
+        "arabic": "Arab",
+        "und": "Unknown",
+        "mul": "Multipe"
     }
     
     lowerCode = LCase(code)
@@ -1263,21 +1261,21 @@ function getLanguageName(code as String) as String
     return code
 end function
 
-' ==================== VISTA PREVIA DEL CANAL ====================
+' ==================== Channel Preview ====================
 
 sub onChannelFocused()
-    ' Cuando el usuario navega por la lista de canales, actualizar la vista previa
+    ' Update channel preview on selection change
     if m.isPlayingVideo then return
     if m.channelList = invalid then return
     
     focusedIndex = m.channelList.itemFocused
-    print ">>> PREVIEW: Canal enfocado = "; focusedIndex
+    print ">>> PREVIEW: Channel focus = "; focusedIndex
     
-    ' Evitar recargar el mismo canal
+    ' Skip reload if the channel is already active
     if focusedIndex = m.lastFocusedChannel then return
     m.lastFocusedChannel = focusedIndex
     
-    ' Obtener el canal enfocado
+    ' Retrieve the focused channel
     channel = getChannelByFocusIndex(focusedIndex)
     if channel <> invalid then
         playPreviewChannel(focusedIndex)
@@ -1293,16 +1291,15 @@ function getChannelByFocusIndex(focusIndex as Integer) as Object
     firstChild = content.getChild(0)
     if firstChild = invalid then return invalid
     
-    ' Si no hay grupos (canales directos)
+    ' If no groups exist (direct channels)
     if firstChild.getChildCount() = 0 then
         return content.getChild(focusIndex)
     else
-        ' Hay grupos, necesitamos calcular el índice correcto
-        ' Usar currFocusSection para obtener la sección actual
+        ' There are groups, so we need to calculate the correct index using currFocusSection to determine the current section.
         if m.channelList.currFocusSection <> invalid then
             section = content.getChild(m.channelList.currFocusSection)
             if section <> invalid then
-                ' El itemFocused es relativo a la sección
+                ' itemFocused depends on the section
                 return section.getChild(focusIndex)
             end if
         end if
@@ -1315,21 +1312,21 @@ sub playPreviewChannel(channelIndex as Integer)
     if m.previewVideo = invalid then return
     if m.flatChannelList = invalid or m.flatChannelList.Count() = 0 then return
     
-    ' Encontrar el canal en la lista plana basándose en el índice de foco
+    ' “Get channel from flat list using focus index
     channel = invalid
     
-    ' Intentar obtener el canal directamente de la lista
+    ' Get the channel directly from the list if possible
     if m.channelList <> invalid and m.channelList.content <> invalid then
         content = m.channelList.content
         firstChild = content.getChild(0)
         
         if firstChild <> invalid and firstChild.getChildCount() = 0 then
-            ' Sin grupos
+            ' No channel groups
             if channelIndex >= 0 and channelIndex < content.getChildCount() then
                 channel = content.getChild(channelIndex)
             end if
         else
-            ' Con grupos - usar la sección actual
+            ' Groups present – use current section
             if m.channelList.currFocusSection <> invalid then
                 section = content.getChild(m.channelList.currFocusSection)
                 if section <> invalid and channelIndex >= 0 and channelIndex < section.getChildCount() then
@@ -1340,23 +1337,23 @@ sub playPreviewChannel(channelIndex as Integer)
     end if
     
     if channel = invalid or channel.url = invalid then 
-        print ">>> PREVIEW: No se pudo obtener el canal"
+        print ">>> PREVIEW: Failed to retrieve channel"
         return
     end if
     
-    ' Evitar recargar el mismo canal en preview
+    ' Skip preview reload if the channel is unchanged
     if m.previewVideo.content <> invalid and m.previewVideo.content.url = channel.url then
         return
     end if
     
-    print ">>> PREVIEW: Reproduciendo vista previa: "; channel.title
+    print ">>> PREVIEW: Starting preview playback: "; channel.title
     
-    ' Actualizar nombre del canal
+    ' Update channel name
     if m.previewChannelName <> invalid then
         m.previewChannelName.text = channel.title
     end if
     
-    ' Crear contenido para la vista previa
+    ' Create preview content
     previewContent = CreateObject("roSGNode", "ContentNode")
     previewContent.url = channel.url
     previewContent.title = channel.title
@@ -1366,7 +1363,7 @@ sub playPreviewChannel(channelIndex as Integer)
     
     m.previewVideo.content = previewContent
     m.previewVideo.control = "play"
-    m.previewVideo.mute = true ' Silenciar la vista previa
+    m.previewVideo.mute = true ' Disable preview audio
 end sub
 
 sub stopPreviewVideo()
@@ -1387,16 +1384,16 @@ sub onOverlayChannelSelected()
 end sub
 
 sub selectChannelFromList(list as Object)
-    print ">>> SELECTCHANNEL: Seleccionando canal de lista"
+    print ">>> SELECTCHANNEL: Selecting channel from list"
     
     if list.content = invalid or list.content.getChildCount() = 0 then
-        print ">>> SELECTCHANNEL ERROR: Contenido inválido"
+        print ">>> SELECTCHANNEL ERROR: Invalid or empty channel list"
         return
     end if
     
     firstChild = list.content.getChild(0)
     if firstChild = invalid then 
-        print ">>> SELECTCHANNEL ERROR: firstChild inválido"
+        print ">>> SELECTCHANNEL ERROR: firstChild invalid"
         return
     end if
     
@@ -1404,35 +1401,35 @@ sub selectChannelFromList(list as Object)
     
     if firstChild.getChildCount() = 0 then
         content = list.content.getChild(list.itemSelected)
-        print ">>> SELECTCHANNEL: Sin grupos, itemSelected = "; list.itemSelected
+        print ">>> SELECTCHANNEL: No group, itemSelected = "; list.itemSelected
     else
         itemSelected = list.itemSelected
         sectionContent = list.content.getChild(list.currFocusSection)
         if sectionContent = invalid then 
-            print ">>> SELECTCHANNEL ERROR: sectionContent inválido"
+            print ">>> SELECTCHANNEL ERROR: sectionContent invalid"
             return
         end if
         content = sectionContent.getChild(itemSelected)
-        print ">>> SELECTCHANNEL: Con grupos, section = "; list.currFocusSection; ", item = "; itemSelected
+        print ">>> SELECTCHANNEL: No groups, section = "; list.currFocusSection; ", item = "; itemSelected
     end if
     
     if content = invalid then 
-        print ">>> SELECTCHANNEL ERROR: content final inválido"
+        print ">>> SELECTCHANNEL ERROR: Selected content is invalid"
         return
     end if
     
-    print ">>> SELECTCHANNEL: Canal seleccionado: "; content.title
+    print ">>> SELECTCHANNEL: Selecting channel: "; content.title
     print ">>> SELECTCHANNEL: URL: "; content.url
     
     findChannelIndexByUrl(content.url)
     
-    print ">>> SELECTCHANNEL: currentChannelIndex establecido en = "; m.currentChannelIndex
+    print ">>> SELECTCHANNEL: currentChannelIndex set to = "; m.currentChannelIndex
     playChannel(content)
 end sub
 
 sub findChannelIndexByUrl(url as String)
     if m.flatChannelList = invalid or m.flatChannelList.Count() = 0 then
-        print ">>> FINDINDEX ERROR: flatChannelList está vacío"
+        print ">>> FINDINDEX ERROR: flatChannelList contains no channels"
         m.currentChannelIndex = 0
         return
     end if
@@ -1441,44 +1438,44 @@ sub findChannelIndexByUrl(url as String)
         channel = m.flatChannelList[i]
         if channel <> invalid and channel.url = url then
             m.currentChannelIndex = i
-            print ">>> FINDINDEX: Canal encontrado en índice "; i
+            print ">>> FINDINDEX: Channel located in index "; i
             return
         end if
     end for
     
-    print ">>> FINDINDEX: Canal NO encontrado, usando índice 0"
+    print ">>> FINDINDEX: No channel found, falling back to index 0"
     m.currentChannelIndex = 0
 end sub
 
 sub reloadCurrentChannel()
-    print ">>> RELOAD: Recargando canal actual"
+    print ">>> RELOAD: Reloading current channel"
     
     if m.flatChannelList = invalid or m.currentChannelIndex < 0 then
-        print ">>> RELOAD ERROR: No hay canal para recargar"
+        print ">>> RELOAD ERROR: There is no channel to reload."
         return
     end if
     
     channel = m.flatChannelList[m.currentChannelIndex]
     if channel = invalid then
-        print ">>> RELOAD ERROR: Canal inválido"
+        print ">>> RELOAD ERROR: Invalid channel"
         return
     end if
     
-    ' Detener el video actual
+    ' Stop the current video.
     m.video.control = "stop"
     
-    ' Crear nuevo contenido
+    ' Create new content
     content = CreateObject("roSGNode", "ContentNode")
     content.title = channel.title
     content.url = channel.url
     content.streamFormat = "hls"
     
-    print ">>> RELOAD: Recargando: "; channel.title
+    print ">>> RELOAD: Reloading: "; channel.title
     
-    ' Forzar la recarga saltando la verificación de mismo canal
+    ' Force the reload, skipping the check for the same channel
     m.video.content = invalid
     
-    ' Pequeño delay y luego reproducir
+    ' Small delay and then play
     content.HttpSendClientCertificates = true
     content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
     m.video.EnableCookies()
@@ -1489,20 +1486,20 @@ sub reloadCurrentChannel()
     m.video.control = "play"
     m.top.setFocus(true)
     
-    print ">>> RELOAD: Canal recargado exitosamente"
+    print ">>> RELOAD: Channel reloaded successfully"
 end sub
 
 sub playChannel(content as Object)
 	content.streamFormat = "hls, mp4, mkv, mp3, avi, m4v, ts, mpeg-4, flv, vob, ogg, ogv, webm, mov, wmv, asf, amv, mpg, mp2, mpeg, mpe, mpv, mpeg2"
 
 	if m.video.content <> invalid and m.video.content.url = content.url then 
-		print ">>> PLAY: Mismo canal, no recargar"
+		print ">>> PLAY: MChannel unchanged, skipping reload"
 		return
 	end if
 
-	print ">>> PLAY: Reproduciendo canal: "; content.title
+	print ">>> PLAY: Reloading channel: "; content.title
 
-	' Detener la vista previa
+	' Stop preview playback
 	if m.previewVideo <> invalid then
 		m.previewVideo.control = "stop"
 	end if
@@ -1535,17 +1532,17 @@ sub playChannel(content as Object)
 	
 	m.video.control = "play"
 	
-	' Asegurar que el Scene tiene el foco para recibir eventos de teclado
+	' Ensure Scene focus for keyboard event handling
 	m.video.setFocus(false)
 	m.channelList.setFocus(false)
 	m.playlistList.setFocus(false)
 	m.top.setFocus(true)
 	
-	' Guardar el estado actual (última playlist y canal)
+	' Save current state (last playlist and channel)
 	saveLastState()
 	
 	print ">>> PLAY: Video iniciado, control = play"
-	print ">>> PLAY: Foco establecido en Scene para capturar teclas"
+	print ">>> PLAY: Scene is focused for keyboard input"
 end sub
 
 function isValidUrl(url as String) as Boolean
@@ -1558,35 +1555,35 @@ function isValidUrl(url as String) as Boolean
     return urlReg.isMatch(url)
 end function
 
-' ==================== GUARDAR/CARGAR ÚLTIMO ESTADO ====================
+' ==================== Save/Restore previous state ====================
 
 sub saveLastState()
-    print ">>> SAVE STATE: Guardando último estado"
+    print ">>> SAVE STATE: Saving current state"
     
     reg = CreateObject("roRegistrySection", "lastState")
     
-    ' Guardar índice de la playlist actual
+    ' Store current playlist index
     reg.Write("playlistIndex", m.currentPlaylist.ToStr())
     
-    ' Guardar URL del canal actual
+    ' Save active channel URL
     if m.flatChannelList <> invalid and m.currentChannelIndex >= 0 and m.currentChannelIndex < m.flatChannelList.Count() then
         channel = m.flatChannelList[m.currentChannelIndex]
         if channel <> invalid and channel.url <> invalid then
             reg.Write("channelUrl", channel.url)
             reg.Write("channelTitle", channel.title)
-            print ">>> SAVE STATE: Canal guardado = "; channel.title
+            print ">>> SAVE STATE: Channel saved = "; channel.title
         end if
     end if
     
-    ' Guardar índice del canal (como respaldo)
+    ' Save channel index as backup”
     reg.Write("channelIndex", m.currentChannelIndex.ToStr())
     
     reg.Flush()
-    print ">>> SAVE STATE: Estado guardado exitosamente"
+    print ">>> SAVE STATE: Successfully saved state"
 end sub
 
 function loadLastState() as Object
-    print ">>> LOAD STATE: Cargando último estado"
+    print ">>> LOAD STATE: Loading saved state"
     
     state = {
         playlistIndex: 0,
@@ -1621,32 +1618,32 @@ function loadLastState() as Object
 end function
 
 sub restorePendingChannel()
-    ' Restaurar el canal pendiente después de cargar la lista
+    ' Restore pending channel after loading the list
     if m.pendingChannelUrl = invalid or m.pendingChannelUrl = "" then return
     
-    print ">>> RESTORE: Buscando canal pendiente: "; m.pendingChannelUrl
+    print ">>> RESTORE: Finding pending channel: "; m.pendingChannelUrl
     
-    ' Buscar el canal por URL
+    ' Retrieve channel using URL
     for i = 0 to m.flatChannelList.Count() - 1
         channel = m.flatChannelList[i]
         if channel <> invalid and channel.url = m.pendingChannelUrl then
             m.currentChannelIndex = i
             m.lastFocusedChannel = i
             
-            ' Saltar al canal en la lista
+            ' Go to channel in list
             if m.channelList <> invalid then
                 m.channelList.jumpToItem = i
             end if
             
-            ' Reproducir vista previa del canal
+            ' Start channel preview
             playPreviewChannel(i)
             
-            print ">>> RESTORE: Canal encontrado y seleccionado en índice "; i
+            print ">>> RESTORE: Channel found and selected in index "; i
             m.pendingChannelUrl = invalid
             return
         end if
     end for
     
-    print ">>> RESTORE: Canal no encontrado, usando primer canal"
+    print ">>> RESTORE: No channel found, defaulting to first channel"
     m.pendingChannelUrl = invalid
 end sub

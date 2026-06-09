@@ -14,7 +14,7 @@
         <Label
             id="appTitle"
             translation="[30, 30]"
-            text="MiroIPTV"
+            text="IPTV Player"
             font="font:LargeBoldSystemFont"
             color="0xFFFFFFFF"
             width="290"/>
@@ -35,7 +35,7 @@
     	itemSpacing="[0, 5]"
     	visible="true"/>
     
-    <!-- Vista previa del video en el menú -->
+    <!-- Video preview in the menu -->
     <Rectangle
         id="previewContainer"
         translation="[1480, 140]"
@@ -64,7 +64,7 @@
             horizAlign="center"/>
     </Rectangle>
     
-    <!-- Video principal a pantalla completa -->
+    <!-- Video to full screen -->
     <Video
         id="Video"
         translation="[0, 0]"
@@ -119,7 +119,7 @@
         <Label
             id="overlayTitle"
             translation="[30, 30]"
-            text="📺 Canales"
+            text="📺 Channels"
             font="font:LargeBoldSystemFont"
             color="0xFFFFFFFF"
             width="460"/>
@@ -135,7 +135,7 @@
     <Label
     	id="loadingSpinner"
     	translation="[860, 540]"
-    	text="Cargando lista..."
+    	text="Loading list..."
     	visible="false"
     	horizAlign="center"
     	vertAlign="center"
