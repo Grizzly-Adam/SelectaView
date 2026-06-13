@@ -1,115 +1,112 @@
-# MiroIPTV
+# SelectaVue IPTV player
 
-Reproductor IPTV moderno para Roku con interfaz limpia y navegación rápida.
+SelectaVue manages and plays M3U playlists with a simple interface that can be quickly and easily navigated.
 
-## 🎯 Características
+## 🎯 Features
 
-- **Lista Simple** - Navegación fácil por todos tus canales
-- **Múltiples Listas M3U** - Guarda y cambia entre diferentes playlists
-- **Cambio Rápido** - Zapea canales con flechas ↑↓ mientras ves TV
-- **Menú Flotante** - Presiona ← para ver canales sin pausar el video
-- **Vista Previa** - Ve el canal en miniatura mientras navegas por la lista
-- **Opciones de Audio** - Cambia la pista de audio/idioma durante la reproducción
-- **Subtítulos** - Activa/desactiva subtítulos cuando estén disponibles
-- **Pantalla Completa** - Video en 1920x1080 sin bordes negros
-- **Multi-formato** - HLS, MP4, MKV, AVI y más de 20 formatos
+- **Simple list** - Easily navigate and flip through channels across multiple playlists
+- **Multiple M3U playlists** - Save new playlist and quickly switch between these
+- **Channel surf** - Switch channels with up and down arrows while watching TV
+- **Quick menu** - Press ← and browse through playlist channels without pausing the video
+- **Preview** - See the selected channel in thumbnail format as you browse the channel list
+- **Audio options** - Change the audio track/language during playback
+- **Subtitles** - Turn subtitles on/off when available
+- **Full screen** - 1920x1080 video with no black borders
+- **Multi-format** - HLS, MP4, MKV, AVI and more than 20 formats
 
-## 📥 Instalación
 
-https://my.roku.com/account/add?channel=DMQKLXP
+## 📥 Tnstallation
 
-## 🎮 Controles
+https://developer.roku.com/dev/docs/developer-setup
 
-### Menú Principal
+## 🎮 Controls
 
-| Botón            | Acción                                             |
+### Main menu
+
+| Button           | Action                                             |
 | ---------------- | -------------------------------------------------- |
-| **←→**           | Cambiar entre menú de playlists y lista de canales |
-| **↑↓**           | Navegar por playlists o canales                    |
-| **OK**           | Reproducir canal seleccionado                      |
-| **Options (\*)** | Agregar nueva playlist M3U                         |
-| **Replay**       | Opciones de la playlist seleccionada               |
+| **←→**           | Switch between playlist menu and channel list      |
+| **↑↓**           | Browse playlists or channels                       |
+| **OK**           | Play selected channel                              |
+| **Options (\*)** | Add new M3U playlist                               |
+| **Replay**       | Reload current channel                             |
 
-> **Vista Previa:** Al navegar por los canales, verás una vista previa en miniatura a la derecha
+> **Preview:** When browsing the channels, you'll see a thumbnail preview on the right. Use → to toggle mute.
+### During  fullscreen playback
 
-### Durante Reproducción
+| Button               | Action                                                  |
+| -------------------- | ------------------------------------------------------- |
+| **OK**               | Open options menu (audio, subtitles, info)              |
+| **Play/Pause**       | Pause or resume video                                   |
+| **Instant Replay**   | Reload the current channel (useful if video was paused) |
+| **←**                | Show/hide the quick menu (video continues playing)      |
+| **↑ / Rewind**       | Channel surf to previous channel in playlist            |
+| **↓ / Fast Forward** | Channel surf to next channel in playlist                |
+| **Back**             | Return to main menu                                     |
 
-| Botón                | Acción                                            |
-| -------------------- | ------------------------------------------------- |
-| **OK**               | Abrir menú de opciones (audio, subtítulos, info)  |
-| **Play/Pause**       | Pausar o reanudar el video                        |
-| **Instant Replay**   | Recargar el canal actual (útil si se pausó)       |
-| **←**                | Mostrar/ocultar menú de canales (el video sigue!) |
-| **↑ / Rewind**       | Canal anterior (zapping instantáneo)              |
-| **↓ / Fast Forward** | Canal siguiente (zapping instantáneo)             |
-| **Back**             | Volver al menú principal                          |
+### Options menu (press OK while playing)
 
-### Menú de Opciones (presiona OK mientras reproduces)
+- 🔊 **Change Audio** - Select the audio track/language
+- 💬 **Subtitles** - Turn subtitles on or off
+- ℹ️ **Channel Info** - Displays information about the current channel
+- ❌ **Close** - Closes the options menu
+> **Tip:** The channels are cyclical - the last one connects to the first one
 
-- 🔊 **Cambiar Audio** - Selecciona la pista de audio/idioma
-- 💬 **Subtítulos** - Activa o desactiva subtítulos
-- ℹ️ **Info del Canal** - Muestra información del canal actual
-- ❌ **Cerrar** - Cierra el menú de opciones
+> **Tip:** Tip: If the video freezes or pauses, press **Instant Replay** (⏪) to reload the channel.
 
-> **Tip:** Los canales son cíclicos - el último conecta con el primero
+## 📺 Personal playlists
 
-> **Tip:** Si el video se congela o pausa, presiona **Instant Replay** (⏪) para recargar el canal
+Use your own M3U playlist or your IPTV provider's URL. Supported formats:
 
-## 📺 Playlists Personalizadas
+- URLs (HTTP/HTTPS)
+- M3U format with EXTINF labels
+- Channel groups (group-title)
 
-Usa tu propia lista M3U o la URL de tu proveedor IPTV. Formatos soportados:
+### Predefined lists
 
-- URLs HTTP/HTTPS
-- Formato M3U con etiquetas EXTINF
-- Logos de canales (tvg-logo)
-- Grupos de canales (group-title)
+The app includes lists of free channels for:
 
-### Listas Predefinidas
+- 🇺🇸 United States
+- 🇨🇦 Canada
+- 🇦🇺 Australia
+- 🇬🇧 United Kingdom
+- 🇯🇵 Japan
+- 🇰🇷 Korea
 
-La app incluye listas de canales gratuitos para:
+### Add custom list
+1. Select "➕ Add List" in the playlists menu
+2. Enter a name for your list
+3. Enter the URL of your M3U playlist (must include http: or https:)
+4. Done! Your list will now appear in the menu
 
-- 🇨🇴 Colombia
-- 🇨🇱 Chile
-- 🇦🇷 Argentina
-- 🇲🇽 México
-- 🇪🇨 Ecuador
-- 🇺🇸 Estados Unidos
+**Playlist recommendations:**
 
-### Agregar Lista Personalizada
+- [M3U.cl](https://m3u.cl/) - Listings by country
+- [IPTV-ORG](https://github.com/iptv-org/iptv) - Global colletction
 
-1. Selecciona "➕ Agregar Lista" en el menú de playlists
-2. Ingresa un nombre para tu lista
-3. Ingresa la URL de tu lista M3U
-4. ¡Listo! Tu lista aparecerá en el menú
+## 🔧 Troubleshooting
 
-**Playlists recomendadas:**
+**The app closes on startup:**
 
-- [M3U.cl](https://m3u.cl/) - Listas por país
-- [IPTV-ORG](https://github.com/iptv-org/iptv) - Colección global
+- Check your internet connection
+- Try a smaller playlist first.
 
-## 🔧 Solución de Problemas
+**The playlist is not loading:**
 
-**La app se cierra al iniciar:**
+- Verify that the URL is accessible from a browser
+- Make sure the format is a valid M3U
+- Try the default demo playlist
 
-- Verifica tu conexión a internet
-- Prueba con una playlist más pequeña primero
+**No audio tracks appear:**
 
-**La playlist no carga:**
+- Wait a few seconds after the channel starts playing
+- Not all channels have multiple audio tracks
+- Press OK to see the available options
 
-- Verifica que la URL sea accesible desde un navegador
-- Asegúrate que el formato sea M3U válido
-- Intenta con la playlist demo por defecto
+**The channel is showing an error:**
 
-**No aparecen pistas de audio:**
-
-- Espera unos segundos después de que el canal empiece a reproducir
-- No todos los canales tienen múltiples pistas de audio
-- Presiona OK para ver las opciones disponibles
-
-**El canal muestra error:**
-
-- Algunos canales pueden estar temporalmente no disponibles
-- Usa ↑↓ para cambiar a otro canal sin cerrar nada
+- Channels gon on and offline, some channels may be temporarily unavailable.
+- Use ↑↓ to switch to another channel without closing anything
 
 **Debug:**
 
@@ -117,17 +114,17 @@ La app incluye listas de canales gratuitos para:
 telnet TU_IP_ROKU 8085
 ```
 
-## 📋 Versión
+## 📋 Version
 
-- **Versión actual:** 2.2.0
-- **Última actualización:** Noviembre 2025
+- **Current version:** Still in alpha stage
+- **Last updated:** June 13, 2026
 
-## 📄 Documentación Legal
+## 📄 Legal documentation
 
-- [Política de Privacidad](PRIVACY_POLICY.md)
-- [Términos de Servicio](TERMS_OF_SERVICE.md)
+- [Privacy Policy](PRIVACY_POLICY.md)
+- [Terms of Service](TERMS_OF_SERVICE.md)
 
-## 📧 Contacto
+## 📧 Contact
 
-- Email: Jumahl@proton.me
-- GitHub: https://github.com/jumahl/SimpleIPTVRoku
+- Email: grizzsoft@gmail.com
+- GitHub: https://github.com/Grizzly-Adam/SelectaVue

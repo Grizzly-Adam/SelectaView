@@ -48,6 +48,9 @@ sub init()
     m.currentPlaylist = 0
     m.isPlayingVideo = false
     m.overlayVisible = false
+    m.previewMuted = true
+    m.previewHintLabel = m.top.FindNode("previewHintLabel")
+    updatePreviewHint()
     m.lastFocusedChannel = -1
     m.pendingChannelUrl = invalid
     m.suppressNextVideoOptionsMenu = false
@@ -91,12 +94,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             if(key = "back")
                 m.video.control = "stop"
                 m.video.visible = false
-                m.channelOverlay.visible = false
+                hideOverlay()
                 m.channelList.visible = true
                 m.sidePanel.visible = true
                 m.previewContainer.visible = true
                 m.isPlayingVideo = false
-                m.overlayVisible = false
                 m.channelList.SetFocus(true)
                 m.top.backgroundURI = "pkg:/images/background-controls.jpg"
                 
@@ -112,8 +114,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 
                 if m.overlayVisible then
                     print ">>> OVERLAY: Hiding overlay"
-                    m.channelOverlay.visible = false
-                    m.overlayVisible = false
+                    hideOverlay()
                     m.top.setFocus(true)
                 else
                     print ">>> OVERLAY: Showing overlay"
@@ -130,8 +131,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 end if
                 result = true
             else if(key = "right" and m.overlayVisible)
-                m.channelOverlay.visible = false
-                m.overlayVisible = false
+                hideOverlay()
                 m.top.setFocus(true)
                 result = true
             else if(key = "up" or key = "rewind")
@@ -178,9 +178,16 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 result = true
             end if
         else
-            if(key = "right")
+            if(key = "right" and not m.channelList.hasFocus())
                 m.sidePanel.visible = true
                 m.channelList.SetFocus(true)
+                result = true
+            else if(key = "right" and m.channelList.hasFocus())
+                m.previewMuted = not m.previewMuted
+                if m.previewVideo <> invalid then
+                    m.previewVideo.mute = m.previewMuted
+                end if
+                updatePreviewHint()
                 result = true
             else if(key = "left")
                 m.sidePanel.visible = true
@@ -1299,28 +1306,6 @@ function getChannelFromListItem(list as Object, itemIndex as Integer) as Object
     firstChild = content.getChild(0)
     if firstChild = invalid then return invalid
 
-    if firstChild.getChildCount() = 0 then
-        if itemIndex >= 0 and itemIndex < content.getChildCount() then
-            return content.getChild(itemIndex)
-        end if
-
-        return invalid
-    end if
-
-    sectionIndex = 0
-    if list.currFocusSection <> invalid then
-        sectionIndex = list.currFocusSection
-    end if
-
-    if sectionIndex >= 0 and sectionIndex < content.getChildCount() then
-        section = content.getChild(sectionIndex)
-        sectionItemIndex = getSectionChildIndexForListItem(content, sectionIndex, itemIndex)
-
-        if section <> invalid and sectionItemIndex >= 0 and sectionItemIndex < section.getChildCount() then
-            return section.getChild(sectionItemIndex)
-        end if
-    end if
-
     return getChannelFromFlatListItem(content, itemIndex)
 end function
 
@@ -1415,13 +1400,28 @@ sub playPreviewChannel(channelIndex as Integer)
     
     m.previewVideo.content = previewContent
     m.previewVideo.control = "play"
-    m.previewVideo.mute = true ' Disable preview audio
+    m.previewVideo.mute = m.previewMuted
 end sub
 
 sub stopPreviewVideo()
     if m.previewVideo <> invalid then
         m.previewVideo.control = "stop"
         m.previewVideo.visible = false
+    end if
+end sub
+
+sub hideOverlay()
+    m.channelOverlay.visible = false
+    m.overlayVisible = false
+    m.channelOverlayList.setFocus(false)
+end sub
+
+sub updatePreviewHint()
+    if m.previewHintLabel = invalid then return
+    if m.previewMuted then
+        m.previewHintLabel.text = "Press RIGHT to unmute"
+    else
+        m.previewHintLabel.text = "Press RIGHT to mute"
     end if
 end sub
 
@@ -1432,9 +1432,8 @@ end sub
 sub onOverlayChannelSelected()
     m.suppressNextVideoOptionsMenu = true
     startOverlayOkSuppressionTimer()
+    hideOverlay()
     selectChannelFromList(m.channelOverlayList)
-    m.channelOverlay.visible = false
-    m.overlayVisible = false
 end sub
 
 sub startOverlayOkSuppressionTimer()
@@ -1491,7 +1490,6 @@ sub selectChannelFromList(list as Object)
     print ">>> SELECTCHANNEL: currentChannelIndex set to = "; m.currentChannelIndex
     playChannel(content)
 end sub
-
 sub findChannelIndexByUrl(url as String)
     if m.flatChannelList = invalid or m.flatChannelList.Count() = 0 then
         print ">>> FINDINDEX ERROR: flatChannelList contains no channels"
@@ -1589,9 +1587,7 @@ sub playChannel(content as Object)
 	m.sidePanel.visible = false
 	m.previewContainer.visible = false
 	
-	if not m.overlayVisible then
-		m.channelOverlay.visible = false
-	end if
+	hideOverlay()
 	
 	m.isPlayingVideo = true
 	
@@ -1601,6 +1597,7 @@ sub playChannel(content as Object)
 	m.video.setFocus(false)
 	m.channelList.setFocus(false)
 	m.playlistList.setFocus(false)
+	m.channelOverlayList.setFocus(false)
 	m.top.setFocus(true)
 	
 	' Save current state (last playlist and channel)

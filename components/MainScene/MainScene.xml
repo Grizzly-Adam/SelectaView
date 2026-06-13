@@ -64,6 +64,15 @@
             horizAlign="center"/>
     </Rectangle>
     
+    <Label
+        id="previewHintLabel"
+        translation="[1480, 420]"
+        text="Press RIGHT to unmute preview"
+        font="font:SmallSystemFont"
+        color="0xAAAAAAFF"
+        width="400"
+        horizAlign="center"/>
+
     <!-- Video to full screen -->
     <Video
         id="Video"
@@ -119,7 +128,7 @@
         <Label
             id="overlayTitle"
             translation="[30, 30]"
-            text="📺 Channels"
+            text="Channels"
             font="font:LargeBoldSystemFont"
             color="0xFFFFFFFF"
             width="460"/>
@@ -128,8 +137,9 @@
             id="channelOverlayList"
             translation="[30, 100]"
             itemSize="[460, 50]"
-            numRows="13"
-            itemSpacing="[0, 5]"/>
+            numRows="12"
+            itemSpacing="[0, 5]"
+            clippingRect="[0, 0, 460, 710]"/>
     </Rectangle>
     
     <Label
