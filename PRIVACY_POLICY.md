@@ -1,83 +1,83 @@
-# Política de Privacidad de MiroIPTV
+# SelectaVue privacy policy
 
-**Última actualización:** 29 de noviembre de 2025
+**Last updated:** June 13, 2026
 
-## 1. Introducción
+## 1. Introductions
 
-MiroIPTV ("nosotros", "nuestro" o "la aplicación") respeta su privacidad y se compromete a proteger sus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos y protegemos su información cuando utiliza nuestra aplicación de Roku.
+SelectaVue ("we," "our," or "the app") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, and protect your information when you use our Roku app.
 
-## 2. Información que Recopilamos
+## 2. How information is handled
 
-### 2.1 Información que usted proporciona
+### 2.1 Locally stored information
 
-- **URLs de listas M3U**: Las direcciones URL de las listas IPTV que usted agrega a la aplicación
-- **Nombres de listas**: Los nombres personalizados que usted asigna a sus listas de canales
+All the information mentioned below is stored locally only on your Roku device. **We do not collect, transmit, or store this information on external servers**.
 
-### 2.2 Información almacenada localmente
+### 2.2 Information that you provide
 
-Toda la información mencionada anteriormente se almacena únicamente en su dispositivo Roku de manera local. **No recopilamos, transmitimos ni almacenamos esta información en servidores externos**.
+- **M3U playlist URLs**: The URLs of the IPTV playlists that you add to the application
+- **List names**: The custom names you assign to your channel lists
 
-### 2.3 Preferencias de reproducción
+### 2.3 Playback preferences
 
-La aplicación puede almacenar localmente:
+The application can store locally:
 
-- Preferencias de pistas de audio seleccionadas
-- Preferencias de subtítulos
-- Último canal visualizado
+- Selected audio track preferences
+- Subtitle preferences
+- Last viewed channel
 
-### 2.4 Información que NO recopilamos
+### 2.4 Information that we do NOT collect
 
-- No recopilamos información personal identificable (nombre, dirección, correo electrónico, etc.)
-- No rastreamos su ubicación
-- No recopilamos datos de uso o análisis
-- No utilizamos cookies ni tecnologías de seguimiento similares
-- No accedemos a otros datos de su dispositivo Roku
+- We do not collect personally identifiable information (name, address, email, etc.)
+- We do not track your location.
+- We do not collect usage or analytics data
+- We do not use cookies or similar tracking technologies
+- We do not access any other data on your Roku device
+- **We do not even have our own servers**
 
-## 3. Cómo Usamos su Información
+## 3. How your information is used
 
-La información almacenada localmente se utiliza únicamente para:
+Locally stored information is used solely for:
 
-- Guardar sus preferencias de listas de canales
-- Proporcionar acceso rápido a sus canales favoritos
-- Mejorar su experiencia de usuario dentro de la aplicación
+- Save your channel list preferences
+- Provide quick access to your favorite channels
+- Improve your user experience within the application
 
-## 4. Compartir Información
+## 4. Information sharing
 
-**No compartimos su información con terceros**. Toda la información permanece en su dispositivo Roku y nunca se transmite a servidores externos, excepto:
+**We do not share you information with third parties**. We don't even know third parties (nor do we care to). All information remains on your Roku device and is never transmitted to external servers, except:
 
-- Las conexiones directas a las URLs de listas M3U que usted proporciona (para cargar el contenido de los canales)
-- Las transmisiones de video desde las fuentes IPTV que usted selecciona
+- Direct connections to the M3U playlist URLs you provide (to load channel content)
+- Video streams from the IPTV sources you select
+- Both of these are essential for playback, are between you and the content provider and do not involve us in anyway.
 
-## 5. Seguridad de los Datos
+## 5. Data security
 
-Implementamos medidas de seguridad apropiadas para proteger su información almacenada localmente en su dispositivo Roku. Sin embargo, ningún método de almacenamiento electrónico es 100% seguro.
+We implement appropriate security measures to protect your information stored locally on your Roku device. However, no method of electronic storage is 100% secure.
 
-## 6. Contenido de Terceros
+## 6. Third-party content
 
-MiroIPTV es un reproductor de listas M3U/IPTV. No somos responsables del contenido proporcionado por las fuentes de terceros que usted elija agregar. Le recomendamos que solo utilice fuentes legítimas y autorizadas.
+SelectaVue is an M3U/IPTV playlist player. We are not responsible for the content provided by third-party sources you choose to add. We recommend that you only use legitimate and authorized sources.
 
-## 7. Privacidad de los Niños
+## 7. Children's privacy
 
-Nuestra aplicación no está dirigida a niños menores de 13 años y no recopilamos intencionalmente información de niños.
+Our app is not directed at children under the age of 13 and we do not intentionally collect information from children (or anyone else, for that matter).
 
-## 8. Sus Derechos
+## 8. Your rights
 
-Usted tiene derecho a:
+You have the right to:
 
-- Eliminar cualquier información almacenada desinstalando la aplicación
-- Modificar o eliminar listas de canales en cualquier momento desde la aplicación
+- Delete any stored information by uninstalling the application
+- Modify or delete any user-added channel lists at any time from the application
 
-## 9. Cambios a esta Política de Privacidad
+## 9. Changes to this Privacy Policy
 
-Podemos actualizar nuestra Política de Privacidad ocasionalmente. Le notificaremos cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de "Última actualización".
+We may update our privacy policy from time to time. We will notify you of any changes by posting the new privacy policy on this page and updating the "last updated" date.
 
-## 10. Contacto
+## 10. Contact
 
-Si tiene preguntas sobre esta Política de Privacidad, puede contactarnos en:
-
-- Email: Jumahl@proton.me
-- GitHub: https://github.com/jumahl/SimpleIPTVRoku
+- Email: grizzsoft@gmail.com
+- GitHub: https://github.com/Grizzly-Adam/SelectaVue
 
 ---
 
-Al usar MiroIPTV, usted acepta esta Política de Privacidad.
+By using SelectaVue, you agree to this Privacy Policy.

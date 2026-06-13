@@ -1,151 +1,151 @@
-# Términos de Uso de MiroIPTV
+# SelectaVue terms of service
 
-**Última actualización:** 29 de noviembre de 2025
+**Last updated:** June 13, 2026
 
-## 1. Aceptación de los Términos
+## 1. Acceptance of the terms
 
-Al instalar y utilizar MiroIPTV ("la Aplicación"), usted acepta estar sujeto a estos Términos de Uso. Si no está de acuerdo con estos términos, no utilice la Aplicación.
+By installing and using SelectaVue ("the Application"), you agree to be bound by these terms of use. If you do not agree to these terms, do not use the Application.
 
-## 2. Descripción del Servicio
+## 2. Service description
 
-MiroIPTV es una aplicación de reproductor de medios para dispositivos Roku que permite a los usuarios:
+SelectaVue is a media player application for Roku devices that allows users to:
 
-- Agregar y gestionar listas de reproducción M3U/IPTV
-- Visualizar canales de transmisión en vivo
-- Organizar y acceder a contenido multimedia de fuentes proporcionadas por el usuario
-- Cambiar entre múltiples pistas de audio cuando estén disponibles
-- Activar y desactivar subtítulos según disponibilidad
-- Previsualizar canales mientras navega por la lista
+- Add and manage M3U/IPTV playlists
+- View live streaming channels
+- Organize and access multimedia content from user-provided sources
+- Switch between multiple audio tracks when available
+- Activate and deactivate subtitles as available
+- Preview channels while browsing a playlist
 
-## 3. Licencia de Uso
+## 3. License agreement
 
-Se le otorga una licencia limitada, no exclusiva, no transferible y revocable para usar MiroIPTV para su uso personal y no comercial en su dispositivo Roku.
+You are granted a limited, non-exclusive, non-transferable, and revocable license to use SelectaVue for your personal, non-commercial use on your Roku device.
 
-### 3.1 Usted PUEDE:
+### 3.1 You CAN:
 
-- Usar la aplicación en sus dispositivos Roku personales
-- Agregar listas M3U de fuentes legítimas
-- Modificar y personalizar sus listas de canales
+- Use the app on your personal Roku devices
+- Add M3U playlists from legitimate sources
+- Modify and customize content of playlists
 
-### 3.2 Usted NO PUEDE:
+### 3.2 You CANNOT:
 
-- Redistribuir, vender o sublicenciar la aplicación
-- Modificar, descompilar o realizar ingeniería inversa de la aplicación
-- Usar la aplicación para fines ilegales o no autorizados
-- Usar la aplicación para acceder a contenido protegido por derechos de autor sin autorización
+- Redistribute, sell, or sublicense the application
+- Modify, decompile, or reverse engineer the application
+- Use the application for illegal or unauthorized purposes
+- Use the application to access copyrighted content without authorization
 
-## 4. Contenido del Usuario
+## 4. User content
 
-### 4.1 Responsabilidad del Contenido
+### 4.1 Content Responsibility
 
-Usted es el único responsable de:
+You are solely responsible for:
 
-- Las URLs de listas M3U que agregue a la aplicación
-- Asegurar que tiene los derechos legales para acceder al contenido
-- Cumplir con todas las leyes aplicables de derechos de autor y propiedad intelectual
+- The URLs of M3U playlists that you add to the application
+- Ensuring that you have the legal rights to access the content
+- Comply with all applicable copyright and intellectual property laws
 
-### 4.2 Contenido de Terceros
+### 4.2 Third-Party Content
 
-MiroIPTV es únicamente un reproductor. No proporcionamos, alojamos ni distribuimos contenido. Todo el contenido proviene de fuentes externas proporcionadas por usted.
+SelectaVue is solely a player. We do not provide, host, or distribute content. All content comes from external sources provided by you.
 
-## 5. Descargo de Responsabilidad
+## 5. Disclaimer
 
-### 5.1 Sin Garantías
+### 5.1 No guarantees
 
-LA APLICACIÓN SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD" SIN GARANTÍAS DE NINGÚN TIPO, YA SEAN EXPRESAS O IMPLÍCITAS.
+THE APPLICATION IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
-### 5.2 Disponibilidad
+### 5.2 Availability
 
-No garantizamos que:
+We do not guarantee that:
 
-- La aplicación funcionará sin interrupciones o errores
-- Los defectos serán corregidos
-- La aplicación estará disponible en todo momento
+- The application will work without interruptions or errors.
+- The defects will be corrected.
+- The application will be available at all times
 
-### 5.3 Contenido de Terceros
+### 5.3 Third-party content
 
-No somos responsables de:
+We are not responsible for:
 
-- La disponibilidad, calidad o legalidad del contenido de terceros
-- Cualquier daño resultante del uso de fuentes externas
-- La precisión o confiabilidad de las transmisiones de terceros
+- The availability, quality, or legality of third-party content
+- Any damage resulting from the use of external sources
+- The accuracy or reliability of third-party transmissions
 
-## 6. Limitación de Responsabilidad
+## 6. Limitation of liability
 
-EN NINGÚN CASO SEREMOS RESPONSABLES POR:
+UNDER NO CIRCUMSTANCES WILL WE BE LIABLE FOR:
 
-- Daños directos, indirectos, incidentales, especiales o consecuentes
-- Pérdida de datos, beneficios o uso
-- Interrupciones del servicio
-- Contenido proporcionado por fuentes de terceros
+- Direct, indirect, incidental, special or consequential damages
+- Loss of data, profits, or use
+- Service interruptions
+- Content provided by third-party sources
 
-## 7. Uso Aceptable
+## 7. Acceptable Use
 
-Usted acepta NO usar MiroIPTV para:
+You agree NOT to use SelectaVue for:
 
-- Acceder a contenido protegido por derechos de autor sin autorización
-- Distribuir o compartir contenido ilegal
-- Violar los derechos de privacidad de terceros
-- Cualquier actividad que viole las leyes locales, estatales o internacionales
+Accessing copyrighted content without authorization
+Distributing or sharing illegal content
+Violating the privacy rights of third parties
+Any activity that violates local, state, or international laws
 
-## 8. Derechos de Propiedad Intelectual
+## 8. Intellectual roperty rights
 
-### 8.1 Propiedad de la Aplicación
+### 8.1 Application Ownership
 
-MiroIPTV y su código fuente son propiedad de sus desarrolladores. Todos los derechos no expresamente otorgados están reservados.
+SelectaVue and its source code are the property of its developers. All rights not expressly granted are reserved.
 
-### 8.2 Marcas Registradas
+### 8.2 Trademarks
 
-El nombre "MiroIPTV" y el logotipo asociado son marcas de los desarrolladores.
+The name "SelectaVue"  and associated logo are trademarks of the developers.
 
-## 9. Actualizaciones y Modificaciones
+## 9. Updates and Modifications
 
-Nos reservamos el derecho de:
+We reserve the right to:
 
-- Modificar o descontinuar la aplicación en cualquier momento
-- Actualizar estos Términos de Uso
-- Agregar o eliminar características de la aplicación
+- Modify or discontinue the application at any time
+- Update these Terms of Use
+- Add or remove application features
 
-Las actualizaciones de estos términos entrarán en vigencia inmediatamente después de su publicación.
+Updates to these terms will take effect immediately upon publication.
 
-## 10. Terminación
+## 10. Termination
 
-Podemos terminar o suspender su acceso a la aplicación inmediatamente, sin previo aviso, si:
+We may terminate or suspend your access to the application immediately, without prior notice, if:
 
-- Viola estos Términos de Uso
-- Usa la aplicación de manera ilegal o no autorizada
-- Lo requerido por ley
+- You violate these terms of use
+- You use the application illegally or without authorization
+- and when required by law
 
-## 11. Ley Aplicable
+## 11. Applicable law
 
-Estos Términos se regirán e interpretarán de acuerdo con las leyes aplicables, sin tener en cuenta sus disposiciones sobre conflictos de leyes.
+These terms shall be governed by and construed in accordance with applicable law, without regard to its conflict of law provisions.
 
-## 12. Indemnización
+## 12. Compensation
 
-Usted acepta indemnizar y eximir de responsabilidad a los desarrolladores de MiroIPTV de cualquier reclamo, daño, pérdida o gasto (incluidos los honorarios de abogados) que surjan de:
+You agree to indemnify and hold harmless the developers of SelectaVue from any claim, damage, loss, or expense (including attorneys' fees) arising from:
 
-- Su uso de la aplicación
-- Su violación de estos Términos de Uso
-- Su violación de derechos de terceros
-- El contenido que usted accede a través de la aplicación
+- Your use of the application
+- Your violation of these terms of use
+- Their violation of third-party rights
+- The content you access through the application
 
-## 13. Divisibilidad
+## 13. Divisibility
 
-Si alguna disposición de estos Términos se considera inválida o inaplicable, las disposiciones restantes seguirán en pleno vigor y efecto.
+If any provision of these terms is deemed invalid or unenforceable, the remaining provisions will remain in full force and effect.
 
-## 14. Acuerdo Completo
+## 14. Complete agreement
 
-Estos Términos de Uso, junto con nuestra Política de Privacidad, constituyen el acuerdo completo entre usted y nosotros con respecto al uso de la aplicación.
+These terms of use, together with our privacy policy, constitute the entire agreement between you and us regarding your use of the application.
 
-## 15. Contacto
+## 15. Contact
 
-Para preguntas sobre estos Términos de Uso, contáctenos en:
+For questions about these terms of use, please contact us at::
 
-- Email: Jumahl@proton.me
-- GitHub: https://github.com/jumahl/SimpleIPTVRoku
+- Email: grizzsoft@gmail.com
+- GitHub: https://github.com/Grizzly-Adam/SelectaVue
 
 ---
 
-**IMPORTANTE:** Al usar MiroIPTV, usted reconoce que ha leído, entendido y aceptado estar sujeto a estos Términos de Uso y a nuestra Política de Privacidad.
+**IMPORTANT:** By using SelectaVue, you acknowledge that you have read, understood and agreed to be bound by these terms of use and our privacy policy.
 
-**Nota Legal:** MiroIPTV es un reproductor de medios. Los usuarios son responsables de asegurar que tienen los derechos legales para acceder a cualquier contenido que visualicen a través de la aplicación. No apoyamos ni toleramos la piratería o el acceso no autorizado a contenido protegido por derechos de autor.
+Legal notice:** SelectaVue is a media player. Users are responsible for ensuring they have the legal rights to access any content they view through the application. We do not support or condone piracy or unauthorized access to copyrighted content.
