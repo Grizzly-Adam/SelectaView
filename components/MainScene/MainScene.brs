@@ -22,7 +22,7 @@ sub init()
     m.channelInfoOverlay = m.top.FindNode("channelInfoOverlay")
     m.channelInfoLabel = m.top.FindNode("channelInfoLabel")
     
-    ' Vista previa del video
+    ' Single video node used for both preview and fullscreen
     m.PreviewVideo = m.top.FindNode("PreviewVideo")
     m.previewVideo = m.top.FindNode("PreviewVideo")
     m.previewChannelName = m.top.FindNode("previewChannelName")
@@ -31,14 +31,12 @@ sub init()
         m.previewVideo.EnableCookies()
         m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
         m.previewVideo.InitClientCertificates()
+        m.previewVideo.ObserveField("state", "checkState")
     end if
-    
+
     if m.loadingSpinnerContainer <> invalid then
         m.loadingSpinnerContainer.visible = false
     end if
-
-    m.video = m.top.FindNode("Video")
-    m.video.ObserveField("state", "checkState")
     
     m.allChannels = invalid
     m.flatChannelList = []
@@ -52,6 +50,9 @@ sub init()
     m.previewHintLabel = m.top.FindNode("previewHintLabel")
     m.muteIndicatorContainer = m.top.FindNode("muteIndicatorContainer")
     m.muteIndicatorImage = m.top.FindNode("muteIndicatorImage")
+    m.videoClipLeft = m.top.FindNode("VideoClipLeft")
+    m.muteHintContainer = m.top.FindNode("muteHintContainer")
+    m.tvOverlay = m.top.FindNode("TV overlay")
     updatePreviewHint()
     m.lastFocusedChannel = -1
     m.pendingChannelUrl = invalid
@@ -94,25 +95,20 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     if(press)
         if m.isPlayingVideo then
             if(key = "back")
-                ' Stop fullscreen video first, then transfer content to preview
-                currentContent = m.video.content
-                m.video.control = "stop"
-                m.video.content = invalid
-                m.video.visible = false
+                ' Resize video back to preview window — no content handoff needed
+                m.previewVideo.translation = [1380, 145]
+                m.previewVideo.width = 444
+                m.previewVideo.height = 250
+                m.previewVideo.mute = m.previewMuted
+                m.previewVideo.trickplaybarvisibilityauto = true
+
                 hideOverlay()
                 m.channelList.visible = true
                 m.sidePanel.visible = true
-                m.PreviewVideo.visible = true
+                showBrowseOverlays()
                 m.isPlayingVideo = false
                 m.top.backgroundURI = "pkg:/images/background-controls.jpg"
-                
-                ' Now start preview with the transferred content
-                if m.previewVideo <> invalid and currentContent <> invalid then
-                    m.previewVideo.content = currentContent
-                    m.previewVideo.control = "play"
-                    m.previewVideo.mute = m.previewMuted
-                end if
-                
+
                 ' Scroll channel list to the last playing channel and focus
                 if m.currentChannelIndex >= 0 then
                     m.channelList.jumpToItem = m.currentChannelIndex
@@ -149,7 +145,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             else if(key = "right" and not m.overlayVisible)
                 ' Toggle mute for fullscreen video
                 m.previewMuted = not m.previewMuted
-                m.video.mute = m.previewMuted
+                m.previewVideo.mute = m.previewMuted
                 showMuteIndicator()
                 result = true
             else if(key = "up" or key = "rewind")
@@ -178,16 +174,16 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                     result = true
                 else if m.overlayVisible then
                     print ">>> KEY OK: Overlay visible, channel list handles selection"
-                else if m.video.state = "playing" or m.video.state = "paused" or m.video.state = "buffering" then
+                else if m.previewVideo.state = "playing" or m.previewVideo.state = "paused" or m.previewVideo.state = "buffering" then
                     showVideoOptionsMenu()
                     result = true
                 end if
             else if(key = "play")
                 ' Play/Pause the video
-                if m.video.state = "playing" then
-                    m.video.control = "pause"
+                if m.previewVideo.state = "playing" then
+                    m.previewVideo.control = "pause"
                 else
-                    m.video.control = "resume"
+                    m.previewVideo.control = "resume"
                 end if
                 result = true
             else if(key = "replay")
@@ -776,10 +772,10 @@ sub onErrorDialogClosed()
 end sub
 
 sub checkState()
-    state = m.video.state
+    state = m.previewVideo.state
     if(state = "error")
         ' Show error in overlay rather than a blocking dialog
-        showChannelError(m.video.errorMsg)
+        showChannelError(m.previewVideo.errorMsg)
     end if
 end sub
 
@@ -955,28 +951,28 @@ end sub
 sub showAudioTracksMenu()
     print ">>> AUDIO TRACKS: Fetching audio tracks"
     
-    if m.video = invalid then return
+    if m.previewVideo = invalid then return
     
     ' Get available audio track info and try multiple properties for compatibility
-    audioTracks = m.video.audioTracks
+    audioTracks = m.previewVideo.audioTracks
     
     print ">>> AUDIO: audioTracks = "; audioTracks
     
     if audioTracks = invalid or audioTracks.Count() = 0 then
         ' Intentar con availableAudioTracks
-        audioTracks = m.video.availableAudioTracks
+        audioTracks = m.previewVideo.availableAudioTracks
         print ">>> AUDIO: availableAudioTracks = "; audioTracks
     end if
     
     ' Debug: Show stream information
-    print ">>> AUDIO: streamInfo = "; m.video.streamInfo
-    print ">>> AUDIO: audioFormat = "; m.video.audioFormat
+    print ">>> AUDIO: streamInfo = "; m.previewVideo.streamInfo
+    print ">>> AUDIO: audioFormat = "; m.previewVideo.audioFormat
     
     if audioTracks = invalid or audioTracks.Count() = 0 then
         ' how debug information
         message = "No alternate audio tracks detected." + chr(10) + chr(10)
-        message = message + "Audio format: " + toStr(m.video.audioFormat) + chr(10)
-        message = message + "Video status: " + m.video.state
+        message = message + "Audio format: " + toStr(m.previewVideo.audioFormat) + chr(10)
+        message = message + "Video status: " + m.previewVideo.state
         
         dialog = CreateObject("roSGNode", "Dialog")
         dialog.title = "🔊 Audio tracks"
@@ -993,8 +989,8 @@ sub showAudioTracksMenu()
     
     ' Get current audio track
     currentTrackIndex = -1
-    if m.video.currentAudioTrack <> invalid then
-        currentTrackIndex = m.video.currentAudioTrack
+    if m.previewVideo.currentAudioTrack <> invalid then
+        currentTrackIndex = m.previewVideo.currentAudioTrack
     end if
     
     for i = 0 to audioTracks.Count() - 1
@@ -1069,10 +1065,10 @@ sub onAudioTrackSelected()
         
         ' Try changing the audio track using different methods.
         ' Method 1: audioTrack (direct index)
-        m.video.audioTrack = trackIndex
+        m.previewVideo.audioTrack = trackIndex
         
         ' Method 2: selectAudioTrack
-        m.video.selectAudioTrack = trackIndex
+        m.previewVideo.selectAudioTrack = trackIndex
         
         ' Show confirmation message
         showChannelInfoMessage("Audio: Track " + (trackIndex + 1).ToStr() + " selected")
@@ -1084,10 +1080,10 @@ end sub
 sub showSubtitlesMenu()
     print ">>> SUBTITLES: Fetching subtitles"
     
-    if m.video = invalid then return
+    if m.previewVideo = invalid then return
     
     ' Get available subtitle track information
-    subtitleTracks = m.video.availableCaptionTracks
+    subtitleTracks = m.previewVideo.availableCaptionTracks
     
     buttons = ["Subtitles off"]
     m.subtitleTracksList = [-1] ' -1 = desactivar
@@ -1138,12 +1134,12 @@ sub onSubtitleTrackSelected()
         
         if trackIndex = -1 then
             print ">>> SUBTITLES: Disabling subtitles"
-            m.video.suppressCaptions = true
+            m.previewVideo.suppressCaptions = true
             showChannelInfoMessage("Subtitles off")
         else
             print ">>> SUBTITLES: Turning subtitles on "; trackIndex
-            m.video.suppressCaptions = false
-            m.video.selectCaptionTrack = trackIndex
+            m.previewVideo.suppressCaptions = false
+            m.previewVideo.selectCaptionTrack = trackIndex
             showChannelInfoMessage("Subtitles on")
         end if
     end if
@@ -1161,18 +1157,18 @@ sub showCurrentChannelInfo()
     message = "Channel: " + channel.title + chr(10)
     message = message + "Position: " + (m.currentChannelIndex + 1).ToStr() + " de " + m.flatChannelList.Count().ToStr() + chr(10)
     
-    if m.video <> invalid then
-        state = m.video.state
+    if m.previewVideo <> invalid then
+        state = m.previewVideo.state
         message = message + "State: " + state + chr(10)
         
         ' Audio information
-        audioTracks = m.video.availableAudioTracks
+        audioTracks = m.previewVideo.availableAudioTracks
         if audioTracks <> invalid then
             message = message + "Audio tracks: " + audioTracks.Count().ToStr() + chr(10)
         end if
         
         ' Subtitle information
-        captionTracks = m.video.availableCaptionTracks
+        captionTracks = m.previewVideo.availableCaptionTracks
         if captionTracks <> invalid then
             message = message + "Subtitles: " + captionTracks.Count().ToStr()
         end if
@@ -1383,6 +1379,12 @@ sub playPreviewChannel(channelIndex as Integer)
     previewContent.HttpSendClientCertificates = true
     previewContent.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
     
+    ' Ensure node is in preview size/position
+    m.previewVideo.translation = [1380, 145]
+    m.previewVideo.width = 444
+    m.previewVideo.height = 250
+    m.previewVideo.trickplaybarvisibilityauto = true
+
     m.previewVideo.content = previewContent
     m.previewVideo.control = "play"
     m.previewVideo.mute = m.previewMuted
@@ -1391,7 +1393,6 @@ end sub
 sub stopPreviewVideo()
     if m.previewVideo <> invalid then
         m.previewVideo.control = "stop"
-        m.previewVideo.visible = false
     end if
 end sub
 
@@ -1429,6 +1430,18 @@ sub hideMuteIndicator()
     end if
 end sub
 
+sub showBrowseOverlays()
+    if m.videoClipLeft <> invalid then m.videoClipLeft.visible = true
+    if m.muteHintContainer <> invalid then m.muteHintContainer.visible = true
+    if m.tvOverlay <> invalid then m.tvOverlay.visible = true
+end sub
+
+sub hideBrowseOverlays()
+    if m.videoClipLeft <> invalid then m.videoClipLeft.visible = false
+    if m.muteHintContainer <> invalid then m.muteHintContainer.visible = false
+    if m.tvOverlay <> invalid then m.tvOverlay.visible = false
+end sub
+
 sub updatePreviewHint()
     if m.previewHintLabel = invalid then return
     if m.previewMuted then
@@ -1439,6 +1452,8 @@ sub updatePreviewHint()
 end sub
 
 sub onChannelSelected()
+    m.suppressNextVideoOptionsMenu = true
+    startOverlayOkSuppressionTimer()
     selectChannelFromList(m.channelList)
 end sub
 
@@ -1538,7 +1553,7 @@ sub reloadCurrentChannel()
     end if
     
     ' Stop the current video.
-    m.video.control = "stop"
+    m.previewVideo.control = "stop"
     
     ' Create new content
     content = CreateObject("roSGNode", "ContentNode")
@@ -1549,17 +1564,17 @@ sub reloadCurrentChannel()
     print ">>> RELOAD: Reloading: "; channel.title
     
     ' Force the reload, skipping the check for the same channel
-    m.video.content = invalid
+    m.previewVideo.content = invalid
     
     ' Small delay and then play
     content.HttpSendClientCertificates = true
     content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
-    m.video.EnableCookies()
-    m.video.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    m.video.InitClientCertificates()
+    m.previewVideo.EnableCookies()
+    m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    m.previewVideo.InitClientCertificates()
     
-    m.video.content = content
-    m.video.control = "play"
+    m.previewVideo.content = content
+    m.previewVideo.control = "play"
     m.top.setFocus(true)
     
     print ">>> RELOAD: Channel reloaded successfully"
@@ -1568,59 +1583,50 @@ end sub
 sub playChannel(content as Object)
 	content.streamFormat = "hls, mp4, mkv, mp3, avi, m4v, ts, mpeg-4, flv, vob, ogg, ogv, webm, mov, wmv, asf, amv, mpg, mp2, mpeg, mpe, mpv, mpeg2"
 
-	' If the preview is already playing this channel, promote it to fullscreen without reloading
-	if m.previewVideo <> invalid and m.previewVideo.content <> invalid and m.previewVideo.content.url = content.url then
-		print ">>> PLAY: Preview already playing this channel, promoting to fullscreen"
-		m.video.content = m.previewVideo.content
-		m.previewVideo.control = "stop"
-		m.video.control = "play"
-		m.video.mute = false
-	else
+	' If already playing this channel, just expand to fullscreen — no reload
+	if m.previewVideo.content = invalid or m.previewVideo.content.url <> content.url then
 		print ">>> PLAY: Loading channel: "; content.title
-
-		' Stop preview playback
-		if m.previewVideo <> invalid then
-			m.previewVideo.control = "stop"
-		end if
-
 		content.HttpSendClientCertificates = true
 		content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
-		m.video.EnableCookies()
-		m.video.SetCertificatesFile("common:/certs/ca-bundle.crt")
-		m.video.InitClientCertificates()
-
-		m.video.content = content
-		m.video.control = "play"
+		m.previewVideo.EnableCookies()
+		m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
+		m.previewVideo.InitClientCertificates()
+		m.previewVideo.content = content
+		m.previewVideo.control = "play"
+	else
+		print ">>> PLAY: Already playing, expanding to fullscreen"
 	end if
 
+	' Unmute when going fullscreen
+	m.previewMuted = false
+	m.previewVideo.mute = false
+
 	m.top.backgroundURI = "pkg:/images/rsgde_bg_hd.jpg"
-	m.video.trickplaybarvisibilityauto = false
-	
-	m.video.visible = true
-	m.video.translation = [0, 0]
-	m.video.width = 1920
-	m.video.height = 1080
-	
+	m.previewVideo.trickplaybarvisibilityauto = false
+	m.previewVideo.visible = true
+	m.previewVideo.translation = [0, 0]
+	m.previewVideo.width = 1920
+	m.previewVideo.height = 1080
+
 	m.channelList.visible = false
 	m.sidePanel.visible = false
-	m.PreviewVideo.visible = false
-	
+	hideBrowseOverlays()
+
 	hideOverlay()
-	
+
 	m.isPlayingVideo = true
-	
+
 	' Ensure Scene focus for keyboard event handling
-	m.video.setFocus(false)
+	m.previewVideo.setFocus(false)
 	m.channelList.setFocus(false)
 	m.playlistList.setFocus(false)
 	m.channelOverlayList.setFocus(false)
 	m.top.setFocus(true)
-	
+
 	' Save current state (last playlist and channel)
 	saveLastState()
-	
-	print ">>> PLAY: Video started, control = play"
-	print ">>> PLAY: Scene is focused for keyboard input"
+
+	print ">>> PLAY: Video fullscreen, scene focused"
 end sub
 
 function isValidUrl(url as String) as Boolean

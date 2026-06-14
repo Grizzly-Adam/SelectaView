@@ -80,13 +80,7 @@
             height="327"/>
 
     <!-- Video to full screen -->
-    <Video
-        id="Video"
-        translation="[0, 0]"
-        width="1920"
-        height="1080"
-        visible="false"
-        focusable="false"/>
+    <!-- Removed: PreviewVideo is now used for both preview and fullscreen -->
 
     <!-- Mute indicator overlay -->
     <Rectangle
