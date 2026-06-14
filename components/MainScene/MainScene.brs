@@ -94,20 +94,30 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     if(press)
         if m.isPlayingVideo then
             if(key = "back")
+                ' Stop fullscreen video first, then transfer content to preview
+                currentContent = m.video.content
                 m.video.control = "stop"
+                m.video.content = invalid
                 m.video.visible = false
                 hideOverlay()
                 m.channelList.visible = true
                 m.sidePanel.visible = true
                 m.PreviewVideo.visible = true
                 m.isPlayingVideo = false
-                m.channelList.SetFocus(true)
                 m.top.backgroundURI = "pkg:/images/background-controls.jpg"
                 
-                ' Continue preview playback if a channel is focused
-                if m.lastFocusedChannel >= 0 then
-                    playPreviewChannel(m.lastFocusedChannel)
+                ' Now start preview with the transferred content
+                if m.previewVideo <> invalid and currentContent <> invalid then
+                    m.previewVideo.content = currentContent
+                    m.previewVideo.control = "play"
+                    m.previewVideo.mute = m.previewMuted
                 end if
+                
+                ' Scroll channel list to the last playing channel and focus
+                if m.currentChannelIndex >= 0 then
+                    m.channelList.jumpToItem = m.currentChannelIndex
+                end if
+                m.channelList.SetFocus(true)
                 result = true
             else if(key = "left")
                 print ">>> OVERLAY: Left arrow key pressed"
@@ -203,18 +213,6 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.sidePanel.visible = true
                 m.playlistList.SetFocus(true)
                 result = true
-            else if(key = "options")
-                if m.playlistList.hasFocus() then
-                    showPlaylistOptions()
-                else
-                    showPlaylistManager()
-                end if
-                result = true
-            else if(key = "replay")
-                if m.playlistList.hasFocus() then
-                    showPlaylistOptions()
-                    result = true
-                end if
             end if
         end if
     end if
@@ -1570,25 +1568,30 @@ end sub
 sub playChannel(content as Object)
 	content.streamFormat = "hls, mp4, mkv, mp3, avi, m4v, ts, mpeg-4, flv, vob, ogg, ogv, webm, mov, wmv, asf, amv, mpg, mp2, mpeg, mpe, mpv, mpeg2"
 
-	if m.video.content <> invalid and m.video.content.url = content.url then 
-		print ">>> PLAY: MChannel unchanged, skipping reload"
-		return
-	end if
-
-	print ">>> PLAY: Reloading channel: "; content.title
-
-	' Stop preview playback
-	if m.previewVideo <> invalid then
+	' If the preview is already playing this channel, promote it to fullscreen without reloading
+	if m.previewVideo <> invalid and m.previewVideo.content <> invalid and m.previewVideo.content.url = content.url then
+		print ">>> PLAY: Preview already playing this channel, promoting to fullscreen"
+		m.video.content = m.previewVideo.content
 		m.previewVideo.control = "stop"
+		m.video.control = "play"
+		m.video.mute = false
+	else
+		print ">>> PLAY: Loading channel: "; content.title
+
+		' Stop preview playback
+		if m.previewVideo <> invalid then
+			m.previewVideo.control = "stop"
+		end if
+
+		content.HttpSendClientCertificates = true
+		content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
+		m.video.EnableCookies()
+		m.video.SetCertificatesFile("common:/certs/ca-bundle.crt")
+		m.video.InitClientCertificates()
+
+		m.video.content = content
+		m.video.control = "play"
 	end if
-
-	content.HttpSendClientCertificates = true
-	content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
-	m.video.EnableCookies()
-	m.video.SetCertificatesFile("common:/certs/ca-bundle.crt")
-	m.video.InitClientCertificates()
-
-	m.video.content = content
 
 	m.top.backgroundURI = "pkg:/images/rsgde_bg_hd.jpg"
 	m.video.trickplaybarvisibilityauto = false
@@ -1606,8 +1609,6 @@ sub playChannel(content as Object)
 	
 	m.isPlayingVideo = true
 	
-	m.video.control = "play"
-	
 	' Ensure Scene focus for keyboard event handling
 	m.video.setFocus(false)
 	m.channelList.setFocus(false)
@@ -1618,7 +1619,7 @@ sub playChannel(content as Object)
 	' Save current state (last playlist and channel)
 	saveLastState()
 	
-	print ">>> PLAY: Video iniciado, control = play"
+	print ">>> PLAY: Video started, control = play"
 	print ">>> PLAY: Scene is focused for keyboard input"
 end sub
 
