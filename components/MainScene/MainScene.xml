@@ -87,6 +87,22 @@
         height="1080"
         visible="false"
         focusable="false"/>
+
+    <!-- Mute indicator overlay -->
+    <Rectangle
+        id="muteIndicatorContainer"
+        translation="[1740, 40]"
+        width="140"
+        height="103"
+        color="0x000000CC"
+        visible="false">
+        <Poster
+            id="muteIndicatorImage"
+            translation="[10, 10]"
+            width="120"
+            height="83"
+            uri=""/>
+    </Rectangle>
     
     <Rectangle
         id="channelInfoOverlay"

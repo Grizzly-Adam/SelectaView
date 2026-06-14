@@ -48,8 +48,10 @@ sub init()
     m.currentPlaylist = 0
     m.isPlayingVideo = false
     m.overlayVisible = false
-    m.previewMuted = true
+    m.previewMuted = false
     m.previewHintLabel = m.top.FindNode("previewHintLabel")
+    m.muteIndicatorContainer = m.top.FindNode("muteIndicatorContainer")
+    m.muteIndicatorImage = m.top.FindNode("muteIndicatorImage")
     updatePreviewHint()
     m.lastFocusedChannel = -1
     m.pendingChannelUrl = invalid
@@ -134,6 +136,12 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 hideOverlay()
                 m.top.setFocus(true)
                 result = true
+            else if(key = "right" and not m.overlayVisible)
+                ' Toggle mute for fullscreen video
+                m.previewMuted = not m.previewMuted
+                m.video.mute = m.previewMuted
+                showMuteIndicator()
+                result = true
             else if(key = "up" or key = "rewind")
                 print ">>> KEY UP/RW presionado, overlayVisible = "; m.overlayVisible
                 if not m.overlayVisible then
@@ -188,6 +196,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                     m.previewVideo.mute = m.previewMuted
                 end if
                 updatePreviewHint()
+                showMuteIndicator()
+                m.channelList.SetFocus(true)
                 result = true
             else if(key = "left")
                 m.sidePanel.visible = true
@@ -1391,6 +1401,34 @@ sub hideOverlay()
     m.channelOverlay.visible = false
     m.overlayVisible = false
     m.channelOverlayList.setFocus(false)
+end sub
+
+sub showMuteIndicator()
+    if m.muteIndicatorContainer = invalid or m.muteIndicatorImage = invalid then return
+
+    if m.previewMuted then
+        m.muteIndicatorImage.uri = "pkg:/images/muteon.png"
+    else
+        m.muteIndicatorImage.uri = "pkg:/images/muteoff.png"
+    end if
+
+    m.muteIndicatorContainer.visible = true
+
+    if m.channelInfoTimer <> invalid then
+        m.channelInfoTimer.control = "stop"
+    end if
+
+    m.channelInfoTimer = CreateObject("roSGNode", "Timer")
+    m.channelInfoTimer.duration = 2
+    m.channelInfoTimer.repeat = false
+    m.channelInfoTimer.ObserveField("fire", "hideMuteIndicator")
+    m.channelInfoTimer.control = "start"
+end sub
+
+sub hideMuteIndicator()
+    if m.muteIndicatorContainer <> invalid then
+        m.muteIndicatorContainer.visible = false
+    end if
 end sub
 
 sub updatePreviewHint()
