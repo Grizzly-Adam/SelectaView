@@ -13,7 +13,7 @@ sub init()
     m.channelList.ObserveField("itemFocused", "onChannelFocused")
     
     m.sidePanel = m.top.FindNode("sidePanel")
-    m.loadingSpinner = m.top.FindNode("loadingSpinner")
+    m.loadingSpinnerContainer = m.top.FindNode("loadingSpinnerContainer")
     
     m.channelOverlay = m.top.FindNode("channelOverlay")
     m.channelOverlayList = m.top.FindNode("channelOverlayList")
@@ -23,7 +23,7 @@ sub init()
     m.channelInfoLabel = m.top.FindNode("channelInfoLabel")
     
     ' Vista previa del video
-    m.previewContainer = m.top.FindNode("previewContainer")
+    m.PreviewVideo = m.top.FindNode("PreviewVideo")
     m.previewVideo = m.top.FindNode("PreviewVideo")
     m.previewChannelName = m.top.FindNode("previewChannelName")
     
@@ -33,8 +33,8 @@ sub init()
         m.previewVideo.InitClientCertificates()
     end if
     
-    if m.loadingSpinner <> invalid then
-        m.loadingSpinner.visible = false
+    if m.loadingSpinnerContainer <> invalid then
+        m.loadingSpinnerContainer.visible = false
     end if
 
     m.video = m.top.FindNode("Video")
@@ -97,7 +97,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 hideOverlay()
                 m.channelList.visible = true
                 m.sidePanel.visible = true
-                m.previewContainer.visible = true
+                m.PreviewVideo.visible = true
                 m.isPlayingVideo = false
                 m.channelList.SetFocus(true)
                 m.top.backgroundURI = "pkg:/images/background-controls.jpg"
@@ -278,8 +278,8 @@ end sub
 sub loadPlaylist(url as String)
     m.global.feedurl = url
     
-    if m.loadingSpinner <> invalid then
-        m.loadingSpinner.visible = true
+    if m.loadingSpinnerContainer <> invalid then
+        m.loadingSpinnerContainer.visible = true
     end if
     
     m.get_channel_list.control = "RUN"
@@ -288,36 +288,13 @@ end sub
 sub setupPlaylistMenu()
     content = CreateObject("roSGNode", "ContentNode")
     
-    countryFlags = {
-        "Colombia": "🇨🇴",
-        "Chile": "🇨🇱",
-        "Argentina": "🇦🇷",
-        "Mexico": "🇲🇽",
-        "Ecuador": "🇪🇨",
-        "United States": "🇺🇸",
-        "Canada": "🇨🇦",
-        "Australia": "🇦🇺",
-        "United Kingdom": "🇬🇧",
-        "Japan": "🇯🇵",
-        "Korea": "🇰🇷"
-    }
-    
     for each playlist in m.playlists
         item = content.CreateChild("ContentNode")
-        if playlist.isDefault = true then
-            flag = countryFlags[playlist.name]
-            if flag <> invalid then
-                item.title = flag + " " + playlist.name
-            else
-                item.title = "⭐ " + playlist.name
-            end if
-        else
-            item.title = "📺 " + playlist.name
-        end if
+        item.title = playlist.name
     end for
     
     item = content.CreateChild("ContentNode")
-    item.title = "➕ Add new playlist"
+    item.title = "+ Add new playlist"
     
     m.playlistList.content = content
     m.playlistList.SetFocus(true)
@@ -810,7 +787,7 @@ sub showChannelError(errorMsg as String)
         channelName = channel.title
     end if
     
-    m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channelName + chr(10) + "⚠️ Error: Channel unavailable"
+    m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channelName + chr(10) + "Error: Channel unavailable"
     
     m.channelInfoOverlay.visible = true
     
@@ -827,8 +804,8 @@ sub showChannelError(errorMsg as String)
 end sub
 
 sub SetContent()
-    if m.loadingSpinner <> invalid then
-        m.loadingSpinner.visible = false
+    if m.loadingSpinnerContainer <> invalid then
+        m.loadingSpinnerContainer.visible = false
     end if
     
     if m.get_channel_list.content <> invalid then
@@ -940,8 +917,8 @@ sub showVideoOptionsMenu()
     print ">>> VIDEO OPTIONS: Showing options menu"
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "⚙️ Playback options"
-    dialog.buttons = ["🔊 Audio Settings", "💬 Subtitles", "ℹ️ Channel Details", "❌ Close"]
+    dialog.title = "Playback options"
+    dialog.buttons = ["Audio Settings", "Subtitles", "Channel Details", "Close"]
     
     m.top.dialog = dialog
     m.top.dialog.observeField("buttonSelected", "onVideoOptionSelected")
@@ -1054,10 +1031,10 @@ sub showAudioTracksMenu()
         m.audioTracksList.Push(i)
     end for
     
-    buttons.Push("❌ Cancel")
+    buttons.Push("Cancel")
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "🔊 Select audio track (" + audioTracks.Count().ToStr() + " disponibles)"
+    dialog.title = "Select audio track (" + audioTracks.Count().ToStr() + " disponibles)"
     dialog.buttons = buttons
     
     m.top.dialog = dialog
@@ -1090,7 +1067,7 @@ sub onAudioTrackSelected()
         m.video.selectAudioTrack = trackIndex
         
         ' Show confirmation message
-        showChannelInfoMessage("🔊 Audio: Track " + (trackIndex + 1).ToStr() + " selected")
+        showChannelInfoMessage("Audio: Track " + (trackIndex + 1).ToStr() + " selected")
     end if
     
     m.top.setFocus(true)
@@ -1104,7 +1081,7 @@ sub showSubtitlesMenu()
     ' Get available subtitle track information
     subtitleTracks = m.video.availableCaptionTracks
     
-    buttons = ["❌ Subtitles off"]
+    buttons = ["Subtitles off"]
     m.subtitleTracksList = [-1] ' -1 = desactivar
     
     if subtitleTracks <> invalid and subtitleTracks.Count() > 0 then
@@ -1127,10 +1104,10 @@ sub showSubtitlesMenu()
         end for
     end if
     
-    buttons.Push("❌ Cancel")
+    buttons.Push("Cancel")
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "💬 Subtitles"
+    dialog.title = "Subtitles"
     
     if subtitleTracks = invalid or subtitleTracks.Count() = 0 then
         dialog.message = "No subtitles available for this channel."
@@ -1154,12 +1131,12 @@ sub onSubtitleTrackSelected()
         if trackIndex = -1 then
             print ">>> SUBTITLES: Disabling subtitles"
             m.video.suppressCaptions = true
-            showChannelInfoMessage("💬 Subtitles off")
+            showChannelInfoMessage("Subtitles off")
         else
             print ">>> SUBTITLES: Turning subtitles on "; trackIndex
             m.video.suppressCaptions = false
             m.video.selectCaptionTrack = trackIndex
-            showChannelInfoMessage("💬 Subtitles on")
+            showChannelInfoMessage("Subtitles on")
         end if
     end if
     
@@ -1194,7 +1171,7 @@ sub showCurrentChannelInfo()
     end if
     
     dialog = CreateObject("roSGNode", "Dialog")
-    dialog.title = "ℹ️ Channel information"
+    dialog.title = "Channel information"
     dialog.message = message
     dialog.buttons = ["OK"]
     
@@ -1585,7 +1562,7 @@ sub playChannel(content as Object)
 	
 	m.channelList.visible = false
 	m.sidePanel.visible = false
-	m.previewContainer.visible = false
+	m.PreviewVideo.visible = false
 	
 	hideOverlay()
 	

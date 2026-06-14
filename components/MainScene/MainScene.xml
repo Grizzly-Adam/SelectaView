@@ -5,73 +5,79 @@
 <children>
     <Rectangle
         id="sidePanel"
-        translation="[60, 60]"
-        width="350"
-        height="960"
-        color="0x000000DD"
+        translation="[0, 0]"
+        width="460"
+        height="1080"
+        color="0x8fcdc1DD"
         visible="true">
         
-        <Label
-            id="appTitle"
-            translation="[30, 30]"
-            text="IPTV Player"
-            font="font:LargeBoldSystemFont"
-            color="0xFFFFFFFF"
-            width="290"/>
-            
+        <Poster
+            id="logoImage"
+            uri="pkg:/images/selectaview.png"
+            translation="[45,60]"
+            width="400"
+            height="100" />
+
         <LabelList
             id="playlistList"
-            translation="[30, 120]"
+            translation="[90, 180]"
             itemSize="[290, 60]"
             numRows="11"
-            itemSpacing="[0, 10]"/>
+            itemSpacing="[0, 10]"
+            color="0x555555DD"/>
     </Rectangle>
     
     <LabelList
     	id="channelList"
-    	translation="[430, 120]"
-    	itemSize="[1020, 50]"
+    	translation="[520, 120]"
+    	itemSize="[830, 50]"
     	numRows="16"
     	itemSpacing="[0, 5]"
+        color="0xCCCCCCDD"
     	visible="true"/>
     
     <!-- Video preview in the menu -->
+    <Video
+        id="PreviewVideo"
+        translation="[1380, 145]"
+        width="444"
+        height="250"
+        visible="true"
+        focusable="false"
+        enableUI="false"/>
     <Rectangle
-        id="previewContainer"
-        translation="[1480, 140]"
+        id="VideoClipLeft"
+        translation="[1380, 145]"
+        width="60"
+        height="250"
+        color="0x024c48FF"
+        visible="true">    
+    </Rectangle>
+
+    <Rectangle
+        id="muteHintContainer"
+        translation="[1430, 460]"
         width="400"
-        height="270"
-        color="0x000000FF"
-        visible="true">
-        
-        <Video
-            id="PreviewVideo"
-            translation="[0, 0]"
-            width="400"
-            height="225"
-            visible="true"
-            focusable="false"
-            enableUI="false"/>
-        
+        height="50"
+        color="0x222222DD"
+        visible="true">    
         <Label
-            id="previewChannelName"
-            translation="[5, 230]"
-            text=""
+            id="muteHintLabel"
+            translation="[5, 10]"
+            text="Press RIGHT to unmute"
             font="font:SmallSystemFont"
-            color="0xFFFFFFFF"
+            color="0x8fcdc1DD"
             width="390"
-            height="35"
             horizAlign="center"/>
     </Rectangle>
-    
-    <Label
-        id="previewHintLabel"
-        translation="[1480, 420]"
-        text="Press RIGHT to unmute preview"
-        font="font:SmallSystemFont"
-        color="0xAAAAAAFF"
-        width="400"
-        horizAlign="center"/>
+
+    <!-- TV overlaying preview -->
+        <Poster
+            id="TV overlay"
+            uri="pkg:/images/retro-set.png"
+            translation="[1410, 120]"
+            width="480"
+            height="327"/>
 
     <!-- Video to full screen -->
     <Video
@@ -104,55 +110,38 @@
     
     <Rectangle
         id="channelOverlay"
-        translation="[100, 120]"
-        width="520"
-        height="840"
-        color="0x000000EE"
-        opacity="0.95"
+        translation="[0, 0]"
+        width="550"
+        height="1080"
+        color="0x024c48CC"
         visible="false">
-        
-        <Rectangle
-            id="overlayBorder"
-            translation="[0, 0]"
-            width="520"
-            height="840"
-            color="0x00A0FF"
-            opacity="0.0">
-            <Rectangle
-                translation="[4, 4]"
-                width="512"
-                height="832"
-                color="0x000000"/>
-        </Rectangle>
-        
-        <Label
-            id="overlayTitle"
-            translation="[30, 30]"
-            text="Channels"
-            font="font:LargeBoldSystemFont"
-            color="0xFFFFFFFF"
-            width="460"/>
         
         <LabelList
             id="channelOverlayList"
-            translation="[30, 100]"
+            translation="[50, 30]"
             itemSize="[460, 50]"
-            numRows="12"
-            itemSpacing="[0, 5]"
-            clippingRect="[0, 0, 460, 710]"/>
+            numRows="18"
+            itemSpacing="[0, 5]"/>
     </Rectangle>
     
-    <Label
-    	id="loadingSpinner"
-    	translation="[860, 540]"
-    	text="Loading list..."
-    	visible="false"
-    	horizAlign="center"
-    	vertAlign="center"
-    	width="400"
-    	height="60"
-    	color="0xFFFFFFFF"
-    	font="font:LargeBoldSystemFont"/>
+    <Rectangle
+        id="loadingSpinnerContainer"
+        translation="[850, 560]"
+        width="420"
+        height="60"
+        color="0x333333DD"
+        visible="true"> 
+        <Label
+    	    id="loadingSpinnerMessage"
+    	    translation="[0, 0]"
+    	    text="Loading playlist..."
+    	    horizAlign="center"
+    	    vertAlign="center"
+    	    width="420"
+    	    height="60"
+    	    color="0xDDDDDDFF"
+    	    font="font:LargeBoldSystemFont"/>
+    </Rectangle>
     
     <get_channel_list
     	id="get_channel_list"
