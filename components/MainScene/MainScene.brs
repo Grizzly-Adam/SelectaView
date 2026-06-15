@@ -1,7 +1,7 @@
 sub init()
-    m.top.backgroundURI = "pkg:/images/background-controls.jpg"
+    m.top.backgroundURI = ""
+    m.top.backgroundColor = "0x024c48FF"
 
-    m.save_feed_url = m.top.FindNode("save_feed_url")
     m.get_channel_list = m.top.FindNode("get_channel_list")
     m.get_channel_list.ObserveField("content", "SetContent")
     
@@ -21,6 +21,11 @@ sub init()
     
     m.channelInfoOverlay = m.top.FindNode("channelInfoOverlay")
     m.channelInfoLabel = m.top.FindNode("channelInfoLabel")
+    m.clockLabel = m.top.FindNode("clockLabel")
+    m.errorOverlay = m.top.FindNode("errorOverlay")
+    m.errorTitleLabel = m.top.FindNode("errorTitleLabel")
+    m.errorChannelLabel = m.top.FindNode("errorChannelLabel")
+    m.errorMessageLabel = m.top.FindNode("errorMessageLabel")
     
     ' Single video node used for both preview and fullscreen
     m.PreviewVideo = m.top.FindNode("PreviewVideo")
@@ -32,6 +37,7 @@ sub init()
         m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
         m.previewVideo.InitClientCertificates()
         m.previewVideo.ObserveField("state", "checkState")
+        m.previewVideo.ObserveField("bufferingStatus", "onBufferingStatus")
     end if
 
     if m.loadingSpinnerContainer <> invalid then
@@ -47,12 +53,27 @@ sub init()
     m.isPlayingVideo = false
     m.overlayVisible = false
     m.previewMuted = false
+    m.errorVisible = false
+    m.bufferVisible = false
+    m.bitrateRetryDone = false
+    m.stallRetryCount = 0
+    m.lastBufferPct = -1
+    m.stallTimer = invalid
+    m.groupBoundaries = []
+    m.pendingGroupJumpIndex = -1
+    m.groupJumpTimer = invalid
+    m.pendingGroupJumpTarget = ""
     m.previewHintLabel = m.top.FindNode("previewHintLabel")
     m.muteIndicatorContainer = m.top.FindNode("muteIndicatorContainer")
     m.muteIndicatorImage = m.top.FindNode("muteIndicatorImage")
     m.videoClipLeft = m.top.FindNode("VideoClipLeft")
     m.muteHintContainer = m.top.FindNode("muteHintContainer")
     m.tvOverlay = m.top.FindNode("TV overlay")
+    m.bufferContainer = m.top.FindNode("bufferContainer")
+    m.bufferFill = m.top.FindNode("bufferFill")
+    m.bufferLabel = m.top.FindNode("bufferLabel")
+    m.bufferTrack = m.top.FindNode("bufferTrack")
+    m.focusTrap = m.top.FindNode("focusTrap")
     updatePreviewHint()
     m.lastFocusedChannel = -1
     m.pendingChannelUrl = invalid
@@ -93,6 +114,17 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     result = false
     
     if(press)
+        ' If error overlay is visible, dismiss it on any key
+        ' OK just dismisses; all other keys also perform their normal action
+        if m.errorVisible then
+            hideErrorOverlay()
+            if key = "OK" then
+                if not m.isPlayingVideo then m.focusTrap.SetFocus(true)
+                return true
+            end if
+            if not m.isPlayingVideo then m.focusTrap.SetFocus(true)
+        end if
+
         if m.isPlayingVideo then
             if(key = "back")
                 ' Resize video back to preview window — no content handoff needed
@@ -101,19 +133,31 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.previewVideo.height = 250
                 m.previewVideo.mute = m.previewMuted
                 m.previewVideo.trickplaybarvisibilityauto = true
+                hideBufferBar()
+
+                ' If still buffering, reshow bar in browse position
+                if m.previewVideo.state = "buffering" then
+                    m.bufferContainer.translation = [1467, 252]
+                    m.bufferContainer.width = 283
+                    m.bufferTrack.width = 277
+                    m.bufferLabel.width = 283
+                    m.bufferContainer.visible = true
+                    m.bufferVisible = true
+                end if
 
                 hideOverlay()
                 m.channelList.visible = true
                 m.sidePanel.visible = true
                 showBrowseOverlays()
                 m.isPlayingVideo = false
-                m.top.backgroundURI = "pkg:/images/background-controls.jpg"
+                m.top.backgroundURI = ""
+    m.top.backgroundColor = "0x024c48FF"
 
                 ' Scroll channel list to the last playing channel and focus
                 if m.currentChannelIndex >= 0 then
                     m.channelList.jumpToItem = m.currentChannelIndex
                 end if
-                m.channelList.SetFocus(true)
+                m.focusTrap.SetFocus(true)
                 result = true
             else if(key = "left")
                 print ">>> OVERLAY: Left arrow key pressed"
@@ -131,7 +175,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                         m.overlayVisible = true
                         m.channelOverlayList.content = m.allChannels
                         m.channelOverlayList.jumpToItem = m.currentChannelIndex
-                        m.channelOverlayList.SetFocus(true)
+                        m.channelOverlayList.itemFocused = m.currentChannelIndex
+                        m.top.setFocus(true)
                         print ">>> OVERLAY: Overlay visible, channels loaded"
                     else
                         print ">>> OVERLAY ERROR: No channels available (m.allChannels are invalid)"
@@ -148,24 +193,38 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.previewVideo.mute = m.previewMuted
                 showMuteIndicator()
                 result = true
-            else if(key = "up" or key = "rewind")
-                print ">>> KEY UP/RW presionado, overlayVisible = "; m.overlayVisible
-                if not m.overlayVisible then
-                    print ">>> KEY UP: Executing changeChannel(-1)"
+            else if(key = "up")
+                if m.overlayVisible then
+                    newIndex = m.currentChannelIndex - 1
+                    if newIndex < 0 then newIndex = m.flatChannelList.Count() - 1
+                    m.currentChannelIndex = newIndex
+                    m.channelOverlayList.jumpToItem = newIndex
+                    channel = m.flatChannelList[newIndex]
+                    if channel <> invalid then showChannelInfo(channel)
+                    result = true
+                else
                     changeChannel(-1)
                     result = true
-                else
-                    print ">>> KEY UP: Overlay visible, input passed to overlay"
                 end if
-            else if(key = "down" or key = "fastforward")
-                print ">>> KEY DOWN/FF presionado, overlayVisible = "; m.overlayVisible
-                if not m.overlayVisible then
-                    print ">>> KEY DOWN: Executing changeChannel(1)"
-                    changeChannel(1)
+            else if(key = "down")
+                if m.overlayVisible then
+                    newIndex = m.currentChannelIndex + 1
+                    if newIndex >= m.flatChannelList.Count() then newIndex = 0
+                    m.currentChannelIndex = newIndex
+                    m.channelOverlayList.jumpToItem = newIndex
+                    channel = m.flatChannelList[newIndex]
+                    if channel <> invalid then showChannelInfo(channel)
                     result = true
                 else
-                    print ">>> KEY DOWN: Overlay visible, input passed to overlay"
+                    changeChannel(1)
+                    result = true
                 end if
+            else if(key = "rewind")
+                jumpToGroup(-1)
+                result = true
+            else if(key = "fastforward")
+                jumpToGroup(1)
+                result = true
             else if(key = "OK")
                 ' Display the options menu only when the video is already playing
                 if m.suppressNextVideoOptionsMenu then
@@ -173,7 +232,14 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                     clearOverlayOkSuppression()
                     result = true
                 else if m.overlayVisible then
-                    print ">>> KEY OK: Overlay visible, channel list handles selection"
+                    channel = m.flatChannelList[m.currentChannelIndex]
+                    if channel <> invalid then
+                        m.suppressNextVideoOptionsMenu = true
+                        startOverlayOkSuppressionTimer()
+                        hideOverlay()
+                        playChannel(channel)
+                    end if
+                    result = true
                 else if m.previewVideo.state = "playing" or m.previewVideo.state = "paused" or m.previewVideo.state = "buffering" then
                     showVideoOptionsMenu()
                     result = true
@@ -192,22 +258,46 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 result = true
             end if
         else
-            if(key = "right" and not m.channelList.hasFocus())
-                m.sidePanel.visible = true
-                m.channelList.SetFocus(true)
+            if(key = "up")
+                newIndex = m.currentChannelIndex - 1
+                if newIndex < 0 then newIndex = m.flatChannelList.Count() - 1
+                m.currentChannelIndex = newIndex
+                m.channelList.jumpToItem = newIndex
                 result = true
-            else if(key = "right" and m.channelList.hasFocus())
+            else if(key = "down")
+                newIndex = m.currentChannelIndex + 1
+                if newIndex >= m.flatChannelList.Count() then newIndex = 0
+                m.currentChannelIndex = newIndex
+                m.channelList.jumpToItem = newIndex
+                result = true
+            else if(key = "right")
                 m.previewMuted = not m.previewMuted
                 if m.previewVideo <> invalid then
                     m.previewVideo.mute = m.previewMuted
                 end if
                 updatePreviewHint()
                 showMuteIndicator()
-                m.channelList.SetFocus(true)
                 result = true
             else if(key = "left")
                 m.sidePanel.visible = true
                 m.playlistList.SetFocus(true)
+                result = true
+            else if(key = "replay")
+                reloadCurrentChannel()
+                result = true
+            else if(key = "rewind")
+                jumpToGroup(-1)
+                result = true
+            else if(key = "fastforward")
+                jumpToGroup(1)
+                result = true
+            else if(key = "OK")
+                channel = m.flatChannelList[m.currentChannelIndex]
+                if channel <> invalid then
+                    m.suppressNextVideoOptionsMenu = true
+                    startOverlayOkSuppressionTimer()
+                    playChannel(channel)
+                end if
                 result = true
             end if
         end if
@@ -397,7 +487,7 @@ sub editPlaylistName()
     playlist = m.playlists[m.selectedPlaylistIndex]
     
     keyboard = createObject("roSGNode", "StandardKeyboardDialog")
-    keyboard.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
+    keyboard.backgroundUri = ""
     keyboard.title = "EDIT NAME"
     keyboard.message = "Enter new name for playlist"
     keyboard.text = playlist.name
@@ -454,7 +544,7 @@ sub editPlaylistUrl()
     playlist = m.playlists[m.selectedPlaylistIndex]
     
     keyboard = createObject("roSGNode", "StandardKeyboardDialog")
-    keyboard.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
+    keyboard.backgroundUri = ""
     keyboard.title = "EDIT URL"
     keyboard.message = "New URL for the M3U playlist"
     keyboard.text = playlist.url
@@ -605,7 +695,7 @@ sub showPlaylistManager()
     m.tempPlaylistName = invalid
     
     keyboardDialog = createObject("roSGNode", "StandardKeyboardDialog")
-    keyboardDialog.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
+    keyboardDialog.backgroundUri = ""
     keyboardDialog.title = "NEW PLAYLIST - STEP 1/2"
     keyboardDialog.message = "Enter name (ex: My list)"
     keyboardDialog.buttons = ["Next", "Cancel"]
@@ -671,7 +761,7 @@ sub showUrlDialog()
     end if
     
     urlDialog = createObject("roSGNode", "StandardKeyboardDialog")
-    urlDialog.backgroundUri = "pkg:/images/rsgde_bg_hd.jpg"
+    urlDialog.backgroundUri = ""
     urlDialog.title = "NEW PLAYLIST - PART 2/2"
     urlDialog.message = "URL of the M3U playlist (ex: https://example.com/list.m3u)"
     urlDialog.buttons = ["Add", "Cancel"]
@@ -699,8 +789,8 @@ sub onPlaylistUrlEntered()
         
         ' Validar URL
         if url = "" or url = invalid then
-            print ">>> PLAYLIST URL ERROR: URL vacía"
-            showUrlErrorMessage("La URL no puede estar vacía")
+            print ">>> PLAYLIST URL ERROR: Empty URL"
+            showUrlErrorMessage("URL cannot be empty")
             return
         end if
         
@@ -773,38 +863,35 @@ end sub
 
 sub checkState()
     state = m.previewVideo.state
-    if(state = "error")
-        ' Show error in overlay rather than a blocking dialog
-        showChannelError(m.previewVideo.errorMsg)
+    if state = "playing" then
+        hideBufferBar()
+        cancelStallTimer()
+        m.bitrateRetryDone = false
+        m.stallRetryCount = 0
+    else if state = "error" then
+        hideBufferBar()
+        cancelStallTimer()
+        errorMsg = m.previewVideo.errorMsg
+        ' Auto-retry on bitrate errors before showing the error overlay
+        if not m.bitrateRetryDone and LCase(errorMsg).InStr("bitrate") >= 0 then
+            print ">>> BITRATE RETRY: No valid bitrates, retrying with relaxed constraints"
+            m.bitrateRetryDone = true
+            retryContent = m.previewVideo.content
+            if retryContent <> invalid then
+                retryContent.SwitchingStrategy = "no-adaptation"
+                m.previewVideo.MaxBandwidth = 0
+                m.previewVideo.content = invalid
+                m.previewVideo.content = retryContent
+                m.previewVideo.control = "play"
+                return
+            end if
+        end if
+        showChannelError(errorMsg)
     end if
 end sub
 
 sub showChannelError(errorMsg as String)
-    if m.channelInfoOverlay = invalid or m.channelInfoLabel = invalid then return
-    
-    channelNumber = (m.currentChannelIndex + 1).ToStr()
-    totalChannels = m.flatChannelList.Count().ToStr()
-    
-    channel = m.flatChannelList[m.currentChannelIndex]
-    channelName = "Channel"
-    if channel <> invalid and channel.title <> invalid then
-        channelName = channel.title
-    end if
-    
-    m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channelName + chr(10) + "Error: Channel unavailable"
-    
-    m.channelInfoOverlay.visible = true
-    
-    ' Set a timer to hide the overlay after 4 seconds
-    if m.channelInfoTimer <> invalid then
-        m.channelInfoTimer.control = "stop"
-    end if
-    
-    m.channelInfoTimer = CreateObject("roSGNode", "Timer")
-    m.channelInfoTimer.duration = 4
-    m.channelInfoTimer.repeat = false
-    m.channelInfoTimer.ObserveField("fire", "hideChannelInfo")
-    m.channelInfoTimer.control = "start"
+    showErrorOverlay(errorMsg)
 end sub
 
 sub SetContent()
@@ -822,7 +909,8 @@ sub SetContent()
         end if
         
         m.channelList.content = m.allChannels
-        m.channelList.SetFocus(true)
+        m.channelList.jumpToItem = 0
+        m.focusTrap.SetFocus(true)
         
         ' Resume last channel if one is pending
         restorePendingChannel()
@@ -836,16 +924,24 @@ end sub
 
 sub buildFlatChannelList()
     m.flatChannelList = []
-    
+    m.groupBoundaries = [] ' [{name, startIndex}] one entry per group
+
     if m.allChannels = invalid then return
-    
+
+    hasGroups = m.allChannels.getChildCount() > 0 and m.allChannels.getChild(0).getChildCount() > 0
+
     for i = 0 to m.allChannels.getChildCount() - 1
         section = m.allChannels.getChild(i)
         if section = invalid then continue for
-        
+
         if section.getChildCount() = 0 then
+            ' Ungrouped playlist — treat the whole list as one group
+            if m.groupBoundaries.Count() = 0 then
+                m.groupBoundaries.Push({name: "All Channels", startIndex: 0})
+            end if
             m.flatChannelList.Push(section)
         else
+            m.groupBoundaries.Push({name: section.title, startIndex: m.flatChannelList.Count()})
             for j = 0 to section.getChildCount() - 1
                 channel = section.getChild(j)
                 if channel <> invalid then
@@ -854,12 +950,95 @@ sub buildFlatChannelList()
             end for
         end if
     end for
-    
-    print "Total channels in flat list: "; m.flatChannelList.Count()
+
+    print ">>> PLAYLIST: Total channels in flat list: "; m.flatChannelList.Count()
+    print ">>> PLAYLIST: Groups found: "; m.groupBoundaries.Count()
+    for each g in m.groupBoundaries
+        print ">>>   Group '"; g.name; "' starts at index "; g.startIndex
+    end for
+end sub
+
+sub jumpToGroup(direction as Integer)
+    if m.groupBoundaries = invalid or m.groupBoundaries.Count() <= 1 then
+        showChannelInfoMessage("Only one group in this playlist")
+        return
+    end if
+
+    ' Find which group the current channel belongs to
+    currentGroup = 0
+    for i = 0 to m.groupBoundaries.Count() - 1
+        if m.groupBoundaries[i].startIndex <= m.currentChannelIndex then
+            currentGroup = i
+        end if
+    end for
+
+    ' Jump to next or previous group, wrapping around
+    targetGroup = currentGroup + direction
+    if targetGroup < 0 then targetGroup = m.groupBoundaries.Count() - 1
+    if targetGroup >= m.groupBoundaries.Count() then targetGroup = 0
+
+    targetIndex = m.groupBoundaries[targetGroup].startIndex
+    groupName = m.groupBoundaries[targetGroup].name
+
+    print ">>> GROUP JUMP: "; groupName; " (flatIndex "; targetIndex; ")"
+
+    m.currentChannelIndex = targetIndex
+    channel = m.flatChannelList[targetIndex]
+    if channel = invalid then return
+
+    showChannelInfo(channel)
+
+    if m.isPlayingVideo then
+        if m.overlayVisible then
+            ' Jump group in overlay list
+            lastOfCurrentGroup = m.groupBoundaries[targetGroup].startIndex - 1
+            if lastOfCurrentGroup >= 0 then
+                m.channelOverlayList.jumpToItem = lastOfCurrentGroup
+            end if
+            m.pendingGroupJumpIndex = targetIndex
+            m.pendingGroupJumpTarget = "overlay"
+            m.groupJumpTimer = CreateObject("roSGNode", "Timer")
+            m.groupJumpTimer.duration = 1.0
+            m.groupJumpTimer.repeat = false
+            m.groupJumpTimer.ObserveField("fire", "onGroupJumpTimer")
+            m.groupJumpTimer.control = "start"
+        else
+            playChannel(channel)
+        end if
+    else
+        m.currentChannelIndex = targetIndex
+        ' Jump to last item of current group, wait 1 second, then jump to target
+        ' so the section header is briefly visible before moving on
+        lastOfCurrentGroup = m.groupBoundaries[targetGroup].startIndex - 1
+        if lastOfCurrentGroup >= 0 then
+            m.channelList.jumpToItem = lastOfCurrentGroup
+        end if
+        m.pendingGroupJumpIndex = targetIndex
+        m.groupJumpTimer = CreateObject("roSGNode", "Timer")
+        m.groupJumpTimer.duration = 1.0
+        m.groupJumpTimer.repeat = false
+        m.groupJumpTimer.ObserveField("fire", "onGroupJumpTimer")
+        m.groupJumpTimer.control = "start"
+    end if
+end sub
+
+sub onGroupJumpTimer()
+    if m.groupJumpTimer <> invalid then
+        m.groupJumpTimer.unobserveField("fire")
+        m.groupJumpTimer = invalid
+    end if
+    if m.pendingGroupJumpIndex >= 0 then
+        if m.pendingGroupJumpTarget = "overlay" then
+            m.channelOverlayList.animateToItem = m.pendingGroupJumpIndex
+        else
+            m.channelList.animateToItem = m.pendingGroupJumpIndex
+        end if
+        m.pendingGroupJumpIndex = -1
+        m.pendingGroupJumpTarget = ""
+    end if
 end sub
 
 sub changeChannel(direction as Integer)
-    print ">>> CHANGECHANNEL: Function called with direction parameter = "; direction
     print ">>> CHANGECHANNEL: flatChannelList.Count() = "; m.flatChannelList.Count()
     print ">>> CHANGECHANNEL: currentChannelIndex = "; m.currentChannelIndex
     
@@ -894,7 +1073,7 @@ sub showChannelInfo(channel as Object)
     channelNumber = (m.currentChannelIndex + 1).ToStr()
     totalChannels = m.flatChannelList.Count().ToStr()
     m.channelInfoLabel.text = channelNumber + "/" + totalChannels + " - " + channel.title
-    
+    showClock()
     m.channelInfoOverlay.visible = true
     
     ' Create a timer to hide the overlay after 3 seconds
@@ -912,6 +1091,9 @@ end sub
 sub hideChannelInfo()
     if m.channelInfoOverlay <> invalid then
         m.channelInfoOverlay.visible = false
+    end if
+    if m.clockLabel <> invalid then
+        m.clockLabel.text = ""
     end if
 end sub
 
@@ -959,7 +1141,7 @@ sub showAudioTracksMenu()
     print ">>> AUDIO: audioTracks = "; audioTracks
     
     if audioTracks = invalid or audioTracks.Count() = 0 then
-        ' Intentar con availableAudioTracks
+        ' Try availableAudioTracks as fallback
         audioTracks = m.previewVideo.availableAudioTracks
         print ">>> AUDIO: availableAudioTracks = "; audioTracks
     end if
@@ -1155,7 +1337,7 @@ sub showCurrentChannelInfo()
     if channel = invalid then return
     
     message = "Channel: " + channel.title + chr(10)
-    message = message + "Position: " + (m.currentChannelIndex + 1).ToStr() + " de " + m.flatChannelList.Count().ToStr() + chr(10)
+    message = message + "Position: " + (m.currentChannelIndex + 1).ToStr() + " of " + m.flatChannelList.Count().ToStr() + chr(10)
     
     if m.previewVideo <> invalid then
         state = m.previewVideo.state
@@ -1193,6 +1375,7 @@ sub showChannelInfoMessage(message as String)
     if m.channelInfoOverlay = invalid or m.channelInfoLabel = invalid then return
     
     m.channelInfoLabel.text = message
+    showClock()
     m.channelInfoOverlay.visible = true
     
     if m.channelInfoTimer <> invalid then
@@ -1262,7 +1445,7 @@ sub onChannelFocused()
     ' Update channel preview on selection change
     if m.isPlayingVideo then return
     if m.channelList = invalid then return
-    
+
     focusedIndex = m.channelList.itemFocused
     print ">>> PREVIEW: Channel focus = "; focusedIndex
 
@@ -1270,6 +1453,7 @@ sub onChannelFocused()
     channel = getChannelByFocusIndex(focusedIndex)
     if channel <> invalid then
         m.lastFocusedChannel = focusedIndex
+        m.currentChannelIndex = focusedIndex
         playPreviewChannel(focusedIndex)
     end if
 end sub
@@ -1430,17 +1614,263 @@ sub hideMuteIndicator()
     end if
 end sub
 
+sub onBufferingStatus()
+    status = m.previewVideo.bufferingStatus
+    if status = invalid then return
+
+    pct = 0
+    if status.percentage <> invalid then pct = status.percentage
+
+    ' Start the display delay timer on first buffering signal if not already running
+    if not m.bufferVisible and pct < 100 then
+        if m.bufferDelayTimer = invalid then
+            m.bufferDelayTimer = CreateObject("roSGNode", "Timer")
+            m.bufferDelayTimer.duration = 1.0
+            m.bufferDelayTimer.repeat = false
+            m.bufferDelayTimer.ObserveField("fire", "showBufferBar")
+            m.bufferDelayTimer.control = "start"
+        end if
+    end if
+
+    ' Update bar width and label if visible
+    if m.bufferVisible then
+        updateBufferBar(pct)
+    end if
+
+    ' Stall detection — restart stall timer whenever percentage moves
+    if pct <> m.lastBufferPct and pct < 100 then
+        m.lastBufferPct = pct
+        ' Reset stall timer since progress is being made
+        if m.stallTimer <> invalid then
+            m.stallTimer.control = "stop"
+            m.stallTimer.unobserveField("fire")
+            m.stallTimer = invalid
+        end if
+        ' Start a fresh stall timer
+        m.stallTimer = CreateObject("roSGNode", "Timer")
+        m.stallTimer.duration = 5.0
+        m.stallTimer.repeat = false
+        m.stallTimer.ObserveField("fire", "onBufferStall")
+        m.stallTimer.control = "start"
+    end if
+
+    ' Hide when done
+    if pct >= 100 then
+        hideBufferBar()
+        cancelStallTimer()
+    end if
+end sub
+
+sub cancelStallTimer()
+    if m.stallTimer <> invalid then
+        m.stallTimer.control = "stop"
+        m.stallTimer.unobserveField("fire")
+        m.stallTimer = invalid
+    end if
+end sub
+
+sub onBufferStall()
+    m.stallTimer = invalid
+    if m.previewVideo.state <> "buffering" then return
+
+    pct = 0
+    status = m.previewVideo.bufferingStatus
+    if status <> invalid and status.percentage <> invalid then pct = status.percentage
+    if pct >= 100 then return
+
+    print ">>> STALL: Buffer stalled at "; pct; "%, retry count = "; m.stallRetryCount
+
+    content = m.previewVideo.content
+    if content = invalid then return
+
+    if m.stallRetryCount = 0 then
+        print ">>> STALL: Retrying with MaxBandwidth 2.5Mbps"
+        m.previewVideo.MaxBandwidth = 2500000
+        m.stallRetryCount = 1
+    else if m.stallRetryCount = 1 then
+        print ">>> STALL: Retrying with MaxBandwidth 1Mbps"
+        m.previewVideo.MaxBandwidth = 1000000
+        m.stallRetryCount = 2
+    else
+        print ">>> STALL: All retries exhausted, showing error"
+        showErrorOverlay("The stream stalled and could not recover. The channel may require more bandwidth than is available.")
+        return
+    end if
+
+    ' Force reload with new bandwidth cap
+    m.lastBufferPct = -1
+    m.previewVideo.content = invalid
+    m.previewVideo.content = content
+    m.previewVideo.control = "play"
+end sub
+
+sub showBufferBar()
+    if m.bufferDelayTimer <> invalid then
+        m.bufferDelayTimer.unobserveField("fire")
+        m.bufferDelayTimer = invalid
+    end if
+
+    ' Only show if still buffering
+    if m.previewVideo.state <> "buffering" then return
+
+    ' Position bar depending on mode
+    if m.isPlayingVideo then
+        ' Fullscreen - centered near bottom
+        m.bufferContainer.translation = [560, 980]
+        m.bufferContainer.width = 800
+        m.bufferTrack.width = 794
+        m.bufferLabel.width = 800
+    else
+        ' Browse - centered in visible 4:3 preview area (x=1440, width=384)
+        m.bufferContainer.translation = [1467, 252]
+        m.bufferContainer.width = 283
+        m.bufferTrack.width = 277
+        m.bufferLabel.width = 283
+    end if
+
+    m.bufferContainer.visible = true
+    m.bufferVisible = true
+
+    ' Seed the bar with current value
+    status = m.previewVideo.bufferingStatus
+    if status <> invalid and status.percentage <> invalid then
+        updateBufferBar(status.percentage)
+    end if
+end sub
+
+sub updateBufferBar(pct as Integer)
+    if m.bufferFill = invalid or m.bufferLabel = invalid then return
+    trackWidth = m.bufferTrack.width
+    fillWidth = Int(trackWidth * pct / 100)
+    if fillWidth < 0 then fillWidth = 0
+    if fillWidth > trackWidth then fillWidth = trackWidth
+    m.bufferFill.width = fillWidth
+    m.bufferLabel.text = pct.ToStr() + "%"
+end sub
+
+sub hideBufferBar()
+    if m.bufferDelayTimer <> invalid then
+        m.bufferDelayTimer.control = "stop"
+        m.bufferDelayTimer.unobserveField("fire")
+        m.bufferDelayTimer = invalid
+    end if
+    if m.bufferContainer <> invalid then
+        m.bufferContainer.visible = false
+    end if
+    if m.bufferFill <> invalid then
+        m.bufferFill.width = 0
+    end if
+    if m.bufferLabel <> invalid then
+        m.bufferLabel.text = ""
+    end if
+    m.bufferVisible = false
+end sub
+
 sub showBrowseOverlays()
     if m.videoClipLeft <> invalid then m.videoClipLeft.visible = true
     if m.muteHintContainer <> invalid then m.muteHintContainer.visible = true
     if m.tvOverlay <> invalid then m.tvOverlay.visible = true
+    if m.focusTrap <> invalid then
+        m.focusTrap.visible = true
+        m.focusTrap.SetFocus(true)
+    end if
 end sub
 
 sub hideBrowseOverlays()
     if m.videoClipLeft <> invalid then m.videoClipLeft.visible = false
     if m.muteHintContainer <> invalid then m.muteHintContainer.visible = false
     if m.tvOverlay <> invalid then m.tvOverlay.visible = false
+    if m.focusTrap <> invalid then m.focusTrap.visible = false
 end sub
+
+sub showClock()
+    if m.clockLabel = invalid then return
+    dt = CreateObject("roDateTime")
+    dt.ToLocalTime()
+    hours = dt.GetHours()
+    minutes = dt.GetMinutes()
+    ampm = "AM"
+    if hours >= 12 then
+        ampm = "PM"
+        if hours > 12 then hours = hours - 12
+    end if
+    if hours = 0 then hours = 12
+    minStr = minutes.ToStr()
+    if minutes < 10 then minStr = "0" + minStr
+    m.clockLabel.text = hours.ToStr() + ":" + minStr + " " + ampm
+end sub
+
+sub showErrorOverlay(errorMsg as String)
+    if m.errorOverlay = invalid then return
+
+    channel = m.flatChannelList[m.currentChannelIndex]
+    channelName = "Unknown Channel"
+    channelNum = (m.currentChannelIndex + 1).ToStr() + "/" + m.flatChannelList.Count().ToStr()
+    if channel <> invalid and channel.title <> invalid then
+        channelName = channel.title
+    end if
+
+    if m.errorTitleLabel <> invalid then
+        m.errorTitleLabel.text = "Channel Unavailable"
+    end if
+    if m.errorChannelLabel <> invalid then
+        m.errorChannelLabel.text = channelNum + "  -  " + channelName
+    end if
+    if m.errorMessageLabel <> invalid then
+        m.errorMessageLabel.text = getFriendlyError(errorMsg)
+    end if
+
+    m.errorOverlay.visible = true
+    m.errorVisible = true
+    if m.focusTrap <> invalid then
+        m.focusTrap.visible = true
+        m.focusTrap.SetFocus(true)
+    end if
+end sub
+
+sub hideErrorOverlay()
+    if m.errorOverlay <> invalid then
+        m.errorOverlay.visible = false
+    end if
+    if m.focusTrap <> invalid then
+        m.focusTrap.visible = false
+    end if
+    m.errorVisible = false
+end sub
+
+function getFriendlyError(errorMsg as String) as String
+    if errorMsg = invalid or errorMsg = "" then
+        return "The stream could not be loaded. The channel may be offline or the URL may be invalid."
+    end if
+
+    msg = LCase(errorMsg)
+
+    if msg.InStr("404") >= 0 or msg.InStr("not found") >= 0 then
+        return "Stream not found (404). The channel URL may be incorrect or the stream has moved."
+    else if msg.InStr("403") >= 0 or msg.InStr("forbidden") >= 0 then
+        return "Access denied (403). This stream may be geo-restricted or require authentication."
+    else if msg.InStr("401") >= 0 or msg.InStr("unauthorized") >= 0 then
+        return "Unauthorized (401). This stream requires a login or subscription."
+    else if msg.InStr("500") >= 0 or msg.InStr("server error") >= 0 then
+        return "Server error (500). The streaming server is having problems. Try again later."
+    else if msg.InStr("timeout") >= 0 or msg.InStr("timed out") >= 0 then
+        return "Connection timed out. The stream is taking too long to respond. Check your network."
+    else if msg.InStr("network") >= 0 or msg.InStr("connect") >= 0 then
+        return "Network error. Check your internet connection and try again."
+    else if msg.InStr("drm") >= 0 or msg.InStr("license") >= 0 then
+        return "DRM / copy protection error. This stream uses a protection scheme that is not supported."
+    else if msg.InStr("format") >= 0 or msg.InStr("codec") >= 0 or msg.InStr("unsupported") >= 0 then
+        return "Unsupported format. This stream uses a codec or container that cannot be played."
+    else if msg.InStr("empty") >= 0 or msg.InStr("no data") >= 0 then
+        return "Empty stream. The channel URL returned no playable content."
+    else if msg.InStr("ssl") >= 0 or msg.InStr("certificate") >= 0 then
+        return "SSL / certificate error. There was a problem with the stream's security certificate."
+    else if msg.InStr("dns") >= 0 or msg.InStr("resolve") >= 0 then
+        return "DNS error. The stream's server address could not be found. Check your network."
+    end if
+
+    return "Playback error: " + errorMsg
+end function
 
 sub updatePreviewHint()
     if m.previewHintLabel = invalid then return
@@ -1569,13 +1999,18 @@ sub reloadCurrentChannel()
     ' Small delay and then play
     content.HttpSendClientCertificates = true
     content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
+    content.SwitchingStrategy = "full-adaptation"
     m.previewVideo.EnableCookies()
     m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
     m.previewVideo.InitClientCertificates()
-    
+    m.previewVideo.MaxBandwidth = 0
     m.previewVideo.content = content
     m.previewVideo.control = "play"
     m.top.setFocus(true)
+    m.bitrateRetryDone = false
+    m.stallRetryCount = 0
+    m.lastBufferPct = -1
+    cancelStallTimer()
     
     print ">>> RELOAD: Channel reloaded successfully"
 end sub
@@ -1588,11 +2023,17 @@ sub playChannel(content as Object)
 		print ">>> PLAY: Loading channel: "; content.title
 		content.HttpSendClientCertificates = true
 		content.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
+		content.SwitchingStrategy = "full-adaptation"
 		m.previewVideo.EnableCookies()
 		m.previewVideo.SetCertificatesFile("common:/certs/ca-bundle.crt")
 		m.previewVideo.InitClientCertificates()
+		m.previewVideo.MaxBandwidth = 0
 		m.previewVideo.content = content
 		m.previewVideo.control = "play"
+		m.bitrateRetryDone = false
+		m.stallRetryCount = 0
+		m.lastBufferPct = -1
+		cancelStallTimer()
 	else
 		print ">>> PLAY: Already playing, expanding to fullscreen"
 	end if
@@ -1601,7 +2042,8 @@ sub playChannel(content as Object)
 	m.previewMuted = false
 	m.previewVideo.mute = false
 
-	m.top.backgroundURI = "pkg:/images/rsgde_bg_hd.jpg"
+	m.top.backgroundURI = ""
+	m.top.backgroundColor = "0x024c48FF"
 	m.previewVideo.trickplaybarvisibilityauto = false
 	m.previewVideo.visible = true
 	m.previewVideo.translation = [0, 0]
@@ -1611,6 +2053,14 @@ sub playChannel(content as Object)
 	m.channelList.visible = false
 	m.sidePanel.visible = false
 	hideBrowseOverlays()
+
+	' If buffer bar is visible, reposition it for fullscreen instead of hiding it
+	if m.bufferVisible then
+		m.bufferContainer.translation = [560, 980]
+		m.bufferContainer.width = 800
+		m.bufferTrack.width = 794
+		m.bufferLabel.width = 800
+	end if
 
 	hideOverlay()
 

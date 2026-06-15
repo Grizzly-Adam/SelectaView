@@ -34,6 +34,10 @@
     	numRows="16"
     	itemSpacing="[0, 5]"
         color="0xCCCCCCDD"
+        sectionDividerHeight="40"
+        sectionDividerFont="font:SmallBoldSystemFont"
+        sectionDividerTextColor="0x8fcdc0FF"
+        sectionDividerTopPadding="10"
     	visible="true"/>
     
     <!-- Video preview in the menu -->
@@ -62,9 +66,9 @@
         color="0x222222DD"
         visible="true">    
         <Label
-            id="muteHintLabel"
+            id="previewHintLabel"
             translation="[5, 10]"
-            text="Press RIGHT to unmute"
+            text="Press RIGHT to mute"
             font="font:SmallSystemFont"
             color="0x8fcdc1DD"
             width="390"
@@ -100,9 +104,9 @@
     
     <Rectangle
         id="channelInfoOverlay"
-        translation="[60, 880]"
+        translation="[60, 860]"
         width="700"
-        height="140"
+        height="170"
         color="0x000000CC"
         visible="false">
         
@@ -113,11 +117,101 @@
             font="font:MediumBoldSystemFont"
             color="0xFFFFFFFF"
             width="660"
-            height="110"
+            height="90"
             wrap="true"
-            maxLines="3"/>
+            maxLines="2"/>
+
+        <Label
+            id="clockLabel"
+            translation="[20, 120]"
+            text=""
+            font="font:SmallSystemFont"
+            color="0xAAAAAAFF"
+            width="660"
+            height="35"/>
+    </Rectangle>
+
+    <!-- Error overlay - centered on screen -->
+    <Rectangle
+        id="errorOverlay"
+        translation="[460, 240]"
+        width="1000"
+        height="560"
+        color="0x000000EE"
+        visible="false">
+
+        <Label
+            id="errorTitleLabel"
+            translation="[30, 30]"
+            text=""
+            font="font:LargeBoldSystemFont"
+            color="0xFF4444FF"
+            width="940"
+            height="60"/>
+
+        <Label
+            id="errorChannelLabel"
+            translation="[30, 100]"
+            text=""
+            font="font:MediumBoldSystemFont"
+            color="0xFFFFFFFF"
+            width="940"
+            height="50"/>
+
+        <Label
+            id="errorMessageLabel"
+            translation="[30, 160]"
+            text=""
+            font="font:SmallSystemFont"
+            color="0xCCCCCCFF"
+            width="940"
+            height="320"
+            wrap="true"
+            maxLines="10"/>
+
+        <Label
+            translation="[30, 510]"
+            text="Press OK to dismiss"
+            font="font:SmallSystemFont"
+            color="0x888888FF"
+            width="940"
+            height="35"/>
     </Rectangle>
     
+    <!-- Buffer progress bar -->
+    <Rectangle
+        id="bufferContainer"
+        translation="[1467, 252]"
+        width="283"
+        height="36"
+        color="0x000000FF"
+        visible="false">
+        <!-- Track (unloaded) -->
+        <Rectangle
+            id="bufferTrack"
+            translation="[3, 3]"
+            width="277"
+            height="30"
+            color="0x024c48FF"/>
+        <!-- Fill (loaded) -->
+        <Rectangle
+            id="bufferFill"
+            translation="[3, 3]"
+            width="0"
+            height="30"
+            color="0x8fcdc0FF"/>
+        <!-- Percentage label -->
+        <Label
+            id="bufferLabel"
+            translation="[0, 6]"
+            text=""
+            font="font:SmallSystemFont"
+            color="0xFFFFFFFF"
+            width="283"
+            height="24"
+            horizAlign="center"/>
+    </Rectangle>
+
     <Rectangle
         id="channelOverlay"
         translation="[0, 0]"
@@ -153,12 +247,18 @@
     	    font="font:LargeBoldSystemFont"/>
     </Rectangle>
     
+    <!-- Invisible focus trap used when error overlay is showing -->
+    <Rectangle
+        id="focusTrap"
+        translation="[0, 0]"
+        width="1"
+        height="1"
+        color="0x00000000"
+        visible="false"
+        focusable="true"/>
+
     <get_channel_list
     	id="get_channel_list"
-    	control="STOP"/>
-    	
-    <save_feed_url
-    	id="save_feed_url"
     	control="STOP"/>
     	
 </children>

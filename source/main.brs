@@ -37,7 +37,7 @@ sub Main()
     end while
 end sub
 
-' Function to handle deep linking
+' Function to handle deep-linking
 sub HandleDeepLink(info as Object, scene as Object)
     print "Handling deep link with info: "; FormatJson(info)
     ' You can extend this to handle specific deep linking scenarios
